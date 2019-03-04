@@ -5,10 +5,10 @@ from wordExtract import WordExtract as ext
 import os
 keep =None
 
-# change root_dir to point to reddit data directory
-root_dir = "/Users/kaku/UCI/2019winter/NLP/reddit-dataset-master"
+#### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
+root_dir =  os.getcwd() + "/../reddit-dataset"
 
-os.chdir(root_dir)
+#os.chdir(root_dir)
 comments, metaLabels, subLabels = [],[],[]
 sub = set()
 meta = set()
