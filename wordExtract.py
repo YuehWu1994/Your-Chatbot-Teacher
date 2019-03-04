@@ -8,7 +8,7 @@ Created on Sun Mar  3 15:15:47 2019
 """
 import numpy as np
 import pandas as pd
-
+import math
 
 class WordExtract:
     def __init__ (self, path):
@@ -44,6 +44,10 @@ class WordExtract:
         self.sub = self.rawData[1][self.SUB_REDDIT]
 
         for i in range (1, self.row):
+            if not isinstance(self.rawData[i][self.TEXT], str):
+                #print("NAN")
+                continue
+        
             self.text.append(self.rawData[i][self.TEXT])
             self.up.append(self.rawData[i][self.UP])
             self.down.append(self.rawData[i][self.DOWN])
