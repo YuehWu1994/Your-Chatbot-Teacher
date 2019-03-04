@@ -18,7 +18,7 @@ docs = ['postings about blah blah','nice post']
 labels = [0,0]
 
 t = Tokenizer()
-t.fit_on_texts(doc)
+t.fit_on_texts(docs)
 vocab_size = len(t.word_index)+1
 
 encoded_docs  = t.texts_to_sequences(docs)
@@ -28,11 +28,11 @@ X_train = sequence.pad_sequences(X_train, maxlen=max_comment_length)
 X_test = sequence.pad_sequences(X_test, maxlen=max_comment_length)
 
 with open('../glove_data/glove.6B/glove.6B.100d.txt') as f:
-for line in f:
-    values = line.split()
-    word = values[0]
-    coefs = asarray(values[1:], dtype='float32')
-    embeddings_index[word] = coefs
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
 print('Loaded %s word vectors.' % len(embeddings_index))
 embedding_matrix = np.zeros((vocab_size, 100))
 for word, i in t.word_index.items():
