@@ -21,8 +21,8 @@ class WordExtract:
         
         # column index
         self.TEXT = self.column - 11
-        self.META_REDDIT = self.column - 9
-        self.SUB_REDDIT = self.column - 8
+        self.META_REDDIT = self.column - 8
+        self.SUB_REDDIT = self.column - 9
         self.UP = self.column - 5
         self.DOWN = self.column - 4
         self.LINK_KARMA = self.column - 3
