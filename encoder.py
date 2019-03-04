@@ -43,7 +43,7 @@ for word, i in t.word_index.items():
 # create the model
 embedding_vecor_length = 100
 model = Sequential()
-model.add(Embedding(vocab_size, embedding_vecor_length, input_length=max_review_length))
+model.add(Embedding(vocab_size, embedding_vecor_length, input_length=max_comment_length))
 model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
 model.add(MaxPooling1D(pool_size=2))
 model.add(LSTM(200))
