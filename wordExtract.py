@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Mar  3 15:15:47 2019
-
-
 @author: Yueh
 """
 import numpy as np
