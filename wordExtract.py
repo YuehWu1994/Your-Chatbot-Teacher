@@ -51,6 +51,7 @@ class WordExtract:
             self.karma.append(self.rawData[i][self.KARMA])
             self.is_gold.append(self.rawData[i][self.IS_GOLD])    
             
-#### example usage            
-W_E = WordExtract("../reddit-dataset/entertainment_anime.csv")
-W_E.extract()
+#### example usage    
+if __name__ == "__main__":        
+    W_E = WordExtract("../reddit-dataset/humor_funny.csv")
+    W_E.extract()
