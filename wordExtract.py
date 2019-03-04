@@ -48,8 +48,8 @@ class WordExtract:
                 continue
         
             self.text.append(self.rawData[i][self.TEXT])
-            self.meta.append(self.rawData[1][self.META_REDDIT])
-            self.sub.append(self.rawData[1][self.SUB_REDDIT])
+            self.meta.append(self.rawData[i][self.META_REDDIT])
+            self.sub.append(self.rawData[i][self.SUB_REDDIT])
             self.up.append(self.rawData[i][self.UP])
             self.down.append(self.rawData[i][self.DOWN])
             self.link_karma.append(self.rawData[i][self.LINK_KARMA])
