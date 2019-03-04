@@ -31,8 +31,8 @@ class WordExtract:
         
         # extracted info
         self.text = []
-        self.meta = ""
-        self.sub = ""
+        self.meta = []
+        self.sub = []
         self.up = []
         self.down = []
         self.link_karma = []
@@ -40,15 +40,16 @@ class WordExtract:
         self.is_gold = []
         
     def extract(self):        
-        self.meta = self.rawData[1][self.META_REDDIT]
-        self.sub = self.rawData[1][self.SUB_REDDIT]
 
         for i in range (1, self.row):
+            # exclude null
             if not isinstance(self.rawData[i][self.TEXT], str):
                 #print("NAN")
                 continue
         
             self.text.append(self.rawData[i][self.TEXT])
+            self.meta.append(self.rawData[1][self.META_REDDIT])
+            self.sub.append(self.rawData[1][self.SUB_REDDIT])
             self.up.append(self.rawData[i][self.UP])
             self.down.append(self.rawData[i][self.DOWN])
             self.link_karma.append(self.rawData[i][self.LINK_KARMA])
