@@ -6,7 +6,7 @@ import os
 keep =None
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
-root_dir =  os.getcwd() + "/../reddit-dataset"
+root_dir =  os.getcwd() + "./reddit-dataset"
 
 #os.chdir(root_dir)
 comments, metaLabels, subLabels = [],[],[]
