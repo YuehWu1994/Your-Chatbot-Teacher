@@ -1,3 +1,4 @@
+# python my_script.py --my-config config.txt  
 import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
