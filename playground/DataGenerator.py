@@ -44,8 +44,8 @@ class Generator(object):
             
             # set up x by(padding), 
             max_len = max(len(x) for x in input_seq)
-            #X = pad_sequences(input_seq, maxlen=max_len, padding='pre') 
-            X = pad_sequences(input_seq, maxlen=100, padding='pre') 
+            X = pad_sequences(input_seq, maxlen=max_len, padding='pre') 
+            #X = pad_sequences(input_seq, maxlen=100, padding='pre') 
             
             # set up y by one-hot vector
             y = np.zeros((self.batch_size, self.numClass))
