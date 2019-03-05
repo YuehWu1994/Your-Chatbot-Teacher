@@ -132,7 +132,7 @@ class lstmEncoder:
         self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
         self.model.add(MaxPooling1D(pool_size=2))
         self.model.add(LSTM(200))
-        self.model.add(AttentionDecoder(200, output_dim=self.num_classes))
+        #self.model.add(AttentionDecoder(200))
         self.model.add(Dense(self.num_classes, activation='sigmoid'))
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
         print(self.model.summary())
