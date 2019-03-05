@@ -12,15 +12,16 @@ import keras.utils as ku
 from sklearn.model_selection import train_test_split
 import math
 import pickle
-
 from DataGenerator import Generator as gen
-
+import argparse
+import configargparse
 batch_size = 50
 num_classes = 0
 
 
 class lstmEncoder:
     def __init__(self, batch_size):
+    	self.args = self._parse_args()
         docs, labels = self.load_data()
         self.docs = docs[:250]
         self.labels = labels[:250]
@@ -28,10 +29,18 @@ class lstmEncoder:
         self.num_classes = len(np.unique(labels))
         self.vocab_size = 0 # not assign yet
 
+
+    def _parse_args():
+		p = configargparse.ArgParser()
+		p.add('-c', '--config',required=True, is_config_file=True, help='config file path')
+		p.add('--embedding_path', required=True)
+		p.add('--data_path', required=True)
+		args = p.parse_args()
+		return args
+
     def load_data(self):
         ### load intput text
-        corpus = pickle.load( open( "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data", "rb" ) )
-        
+        corpus = pickle.load( open( self.args.data_path, "rb" ) )
         docs = []
         labels = []  
         
@@ -62,7 +71,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open('/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt', encoding="utf-8")
+        f = open(self.args.embedding_path, encoding="utf-8")
         for line in f:
             values = line.split()
             word = values[0]
