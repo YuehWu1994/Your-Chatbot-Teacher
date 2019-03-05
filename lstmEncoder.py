@@ -10,6 +10,9 @@ from keras.layers import Embedding
 from keras.layers import LSTM
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
+from keras import backend as K
+from keras import initializers
+from keras.engine.topology import Layer
 import keras.utils as ku
 from sklearn.model_selection import train_test_split
 import math
@@ -132,7 +135,6 @@ class lstmEncoder:
         self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
         self.model.add(MaxPooling1D(pool_size=2))
         self.model.add(LSTM(200))
-        #self.model.add(AttentionDecoder(200))
         self.model.add(Dense(self.num_classes, activation='sigmoid'))
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
         print(self.model.summary())
