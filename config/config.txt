@@ -1,0 +1,2 @@
+embedding_path = /Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt
+data_path = /Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data 
