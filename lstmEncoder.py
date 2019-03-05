@@ -14,7 +14,7 @@ import keras.utils as ku
 from sklearn.model_selection import train_test_split
 import math
 import pickle as pkl
-
+import os
 # custom module
 from DataGenerator import Generator as gen
 from AttentionDecoder import AttentionDecoder
@@ -57,7 +57,7 @@ class lstmEncoder:
         ### load intput text
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         
-        print("LOAD_DATA...")
+        print("LOAD REDDIT")
         corpus = pkl.load( open( self.args.data_path, "rb" ) )
         docs = []
         labels = []  
@@ -70,18 +70,18 @@ class lstmEncoder:
         
         print("Tokenize...")     
         t = Tokenizer()
-        t.fit_on_texts(self.docs)
-        
+        t.fit_on_texts(docs)
         ### integer encode the documents
-        encoded_docs = t.texts_to_sequences(self.docs)
+        encoded_docs = t.texts_to_sequences(docs)
         
+        print("WRITE PKL")
         with open('./enc_doc.pkl','wb') as f:
             pkl.dump(encoded_docs,f)
         with open('./label.pkl','wb') as f:
-            pkl.dump(self.labels,f)
+            pkl.dump(labels,f)
         with open('./word_index.pkl','wb') as f:
             pkl.dump(t.word_index,f)  
-        
+    
     
     def create_Emb(self):
         ### split in random
@@ -129,10 +129,10 @@ class lstmEncoder:
         self.model = Sequential()
         e = Embedding(self.vocab_size, 100, weights=[embedding_matrix], input_length=None, trainable=False)
         self.model.add(e)
-        self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
-        self.model.add(MaxPooling1D(pool_size=2))
+        # self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        # self.model.add(MaxPooling1D(pool_size=2))
         self.model.add(LSTM(200))
-        #self.model.add(AttentionDecoder(200))
+        self.model.add(AttentionDecoder(200))
         self.model.add(Dense(self.num_classes, activation='sigmoid'))
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
         print(self.model.summary())
