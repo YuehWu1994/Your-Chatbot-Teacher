@@ -37,7 +37,7 @@ class lstmEncoder:
         args = p.parse_args()
         return args
     
-    def set_limitData(self, limit=None, X_train, y_train, X_val, y_val, X_test, y_test):
+    def set_limitData(self, X_train, y_train, X_val, y_val, X_test, y_test, limit=None):
         X_train = X_train[:limit]
         y_train = y_train[:limit]
         X_val = X_val[:limit]
@@ -77,7 +77,7 @@ class lstmEncoder:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
         
         ### DEBUG: set data length
-        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(20000, X_train, y_train, X_val, y_val, X_test, y_test)
+        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 20000)
         self.trainLen = len(X_train)
         
         
@@ -116,7 +116,7 @@ class lstmEncoder:
         self.model = Sequential()
         e = Embedding(self.vocab_size, 100, weights=[embedding_matrix], input_length=None, trainable=False)
         self.model.add(e)
-        self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        self.model.add(Conv1D(filters=100, kernel_size=5, padding='same', activation='relu'))
         self.model.add(MaxPooling1D(pool_size=2))
         self.model.add(LSTM(200))
         self.model.add(Dense(self.num_classes, activation='sigmoid'))
