@@ -9,6 +9,11 @@ James Quintero
 #### Reddit Dataset
 https://github.com/linanqiu/reddit-dataset 
 
+#### Create Encoder Data
+```haskell =
+python create_encoder_data.py
+```
+
 
 #### lstmEncoder usage instruction
 - Install GloVe 6B token version at [Here](https://nlp.stanford.edu/projects/glove/) 
