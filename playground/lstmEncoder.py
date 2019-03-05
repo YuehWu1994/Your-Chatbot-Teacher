@@ -15,15 +15,11 @@ import pickle
 
 from DataGenerator import Generator as gen
 
-batch_size = 50
-num_classes = 0
-
-
 class lstmEncoder:
     def __init__(self, batch_size):
         docs, labels = self.load_data()
-        self.docs = docs[:250]
-        self.labels = labels[:250]
+        self.docs = docs
+        self.labels = labels
         self.batch_size = batch_size
         self.num_classes = len(np.unique(labels))
         self.vocab_size = 0 # not assign yet
@@ -52,12 +48,21 @@ class lstmEncoder:
         encoded_docs = t.texts_to_sequences(self.docs)
 
         ### split in random
-        X_train, X_val, y_train, y_val = train_test_split(encoded_docs[:150], self.labels[:150], test_size=0.33, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(encoded_docs, self.labels, test_size=0.1, random_state=42)
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
+        # use top 100 data
+        X_train = X_train[:100]
+        y_train = y_train[:100]
+        X_val = X_val[:100]
+        y_val = y_val[:100]
+        X_test = X_test[:100]
+        y_test = t_test[:100]
+        
         ### pad test data
         max_len = max(len(x) for x in encoded_docs[150:])
-        X_test = pad_sequences(encoded_docs[150:], maxlen=max_len, padding='post')
-        y_test = ku.to_categorical(self.labels[150:], num_classes=num_classes)
+        X_test = pad_sequences(X_test, maxlen=max_len, padding='post')
+        y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
 
 
         ### load the whole embedding into memory
@@ -99,26 +104,19 @@ class lstmEncoder:
         
     def train(self,  train_g, val_g, X_test, y_test):
         self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=50, 
-                            validation_data=val_g.__getitem__(),validation_steps=50, verbose=0)
+                            validation_data=val_g.__getitem__(),validation_steps=50)
         
         ### evaluate the model
         #loss, accuracy = model.evaluate(padded_docs, labels, verbose=0)
-        loss, accuracy = self.model.evaluate(X_test, y_test, verbose=0)
+        loss, accuracy = self.model.evaluate(X_test, y_test)
         
         print('Accuracy: %f' % (accuracy*100))
 
 if __name__ == "__main__":     
     lstm = lstmEncoder(50)
     train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
-    m = lstm.buildModel(embedding_matrix)
+    #lstm.buildModel(embedding_matrix)
     #lstm.train(train_g, val_g, X_test, y_test)
-    m.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(lstm.docs) / lstm.batch_size), epochs=50, 
-                        validation_data=val_g.__getitem__(),validation_steps=50, verbose=0)
-    
-    ### evaluate the model
-    #loss, accuracy = model.evaluate(padded_docs, labels, verbose=0)
-    loss, accuracy = m.evaluate(X_test, y_test, verbose=0)
-    
-    print('Accuracy: %f' % (accuracy*100))
+
     
     

@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Mar  4 00:45:47 2019
-
-@author: apple
-"""
-
 # this may be useful, idk lol
 
 from keras.preprocessing.sequence import pad_sequences
