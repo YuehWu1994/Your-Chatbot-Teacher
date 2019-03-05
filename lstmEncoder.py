@@ -37,13 +37,13 @@ class lstmEncoder:
         args = p.parse_args()
         return args
     
-    def set_limitData(self, limit, X_train, y_train, X_val, y_val, X_test, y_test):
-        X_train = X_train[:1000]
-        y_train = y_train[:1000]
-        X_val = X_val[:1000]
-        y_val = y_val[:1000]
-        X_test = X_test[:1000]
-        y_test = y_test[:1000]  
+    def set_limitData(self, limit=None, X_train, y_train, X_val, y_val, X_test, y_test):
+        X_train = X_train[:limit]
+        y_train = y_train[:limit]
+        X_val = X_val[:limit]
+        y_val = y_val[:limit]
+        X_test = X_test[:limit]
+        y_test = y_test[:limit]  
         return X_train, y_train, X_val, y_val, X_test, y_test
 
     def load_data(self):
@@ -77,7 +77,7 @@ class lstmEncoder:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
         
         ### DEBUG: set data length
-        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(100, X_train, y_train, X_val, y_val, X_test, y_test)
+        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(20000, X_train, y_train, X_val, y_val, X_test, y_test)
         self.trainLen = len(X_train)
         
         
