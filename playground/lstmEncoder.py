@@ -15,7 +15,6 @@ import math
 import pickle
 from DataGenerator import Generator as gen
 
-import argparse
 import configargparse
 
 
@@ -40,6 +39,7 @@ class lstmEncoder:
 
     def load_data(self):
         ### load intput text
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         corpus = pickle.load( open( self.args.data_path, "rb" ) )
         docs = []
         labels = []  
@@ -71,16 +71,19 @@ class lstmEncoder:
         y_val = y_val[:100]
         X_test = X_test[:100]
         y_test = y_test[:100]
+        print(self.num_classes)
+        print(y_test)
         
         ### pad test data
-        max_len = max(len(x) for x in encoded_docs[150:])
+        max_len = max(len(x) for x in X_test)
         X_test = pad_sequences(X_test, maxlen=max_len, padding='post')
         y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
 
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open('/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt', encoding="utf-8")
+        f = open(self.args.embedding_path, encoding="utf-8")
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         for line in f:
             values = line.split()
             word = values[0]

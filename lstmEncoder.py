@@ -15,7 +15,6 @@ import math
 import pickle
 from DataGenerator import Generator as gen
 
-import argparse
 import configargparse
 
 
@@ -37,9 +36,19 @@ class lstmEncoder:
         p.add('--data_path', required=True)
         args = p.parse_args()
         return args
+    
+    def set_limitData(self, limit, X_train, y_train, X_val, y_val, X_test, y_test):
+        X_train = X_train[:1000]
+        y_train = y_train[:1000]
+        X_val = X_val[:1000]
+        y_val = y_val[:1000]
+        X_test = X_test[:1000]
+        y_test = y_test[:1000]  
+        return X_train, y_train, X_val, y_val, X_test, y_test
 
     def load_data(self):
         ### load intput text
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         corpus = pickle.load( open( self.args.data_path, "rb" ) )
         docs = []
         labels = []  
@@ -64,23 +73,21 @@ class lstmEncoder:
         X_train, X_test, y_train, y_test = train_test_split(encoded_docs, self.labels, test_size=0.1, random_state=42)
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-        # use top 100 data
-        X_train = X_train[:100]
-        y_train = y_train[:100]
-        X_val = X_val[:100]
-        y_val = y_val[:100]
-        X_test = X_test[:100]
-        y_test = y_test[:100]
+        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(1000, X_train, y_train, X_val, y_val, X_test, y_test)
+        
+        print(self.num_classes)
+        print(y_test)
         
         ### pad test data
-        max_len = max(len(x) for x in encoded_docs[150:])
+        max_len = max(len(x) for x in X_test)
         X_test = pad_sequences(X_test, maxlen=max_len, padding='post')
         y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
 
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open('/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt', encoding="utf-8")
+        f = open(self.args.embedding_path, encoding="utf-8")
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         for line in f:
             values = line.split()
             word = values[0]
@@ -128,7 +135,7 @@ class lstmEncoder:
 if __name__ == "__main__":     
     lstm = lstmEncoder(50)
     train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
-    #lstm.buildModel(embedding_matrix)
-    #lstm.train(train_g, val_g, X_test, y_test)
+    lstm.buildModel(embedding_matrix)
+    lstm.train(train_g, val_g, X_test, y_test)
     
     
