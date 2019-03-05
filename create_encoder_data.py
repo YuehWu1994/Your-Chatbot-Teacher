@@ -26,9 +26,9 @@ for _, _, fileList in os.walk(root_dir):
 
 meta2id = {}
 sub2id = {}
-for i,c in enumerate(meta,1):
+for i,c in enumerate(meta):
     meta2id[c] = i
-for i,c in enumerate(sub,1):
+for i,c in enumerate(sub):
     sub2id[c] = i
 
 corpus = []
@@ -36,5 +36,6 @@ for i,c in enumerate(comments):
     corpus.append([c, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
 
 import pickle as pkl
-with open('data','wb') as f:
+
+with open('./data','wb') as f:
     pkl.dump(corpus,f)
