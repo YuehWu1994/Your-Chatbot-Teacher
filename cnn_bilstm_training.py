@@ -46,7 +46,7 @@ class CharCNN:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
-                self.labels.append(c[1])
+                self.labels.append(c[2])
             # self.labels = np.array(labels)
         del corpus
         self.labels = self.labels[:size_limit]
@@ -97,6 +97,7 @@ class CharCNN:
             print('Index to Label: ', self.index2labels)
             
         self.num_of_label = len(self.label2indexes)
+        print("Number of class: ", self.num_of_label)
 
         return self.label2indexes, self.index2labels
     
