@@ -1,3 +1,3 @@
-!wget http://nlp.stanford.edu/data/glove.6B.zip
-!unzip glove*.zip
-!pip install configargparse
+wget http://nlp.stanford.edu/data/glove.6B.zip
+unzip glove*.zip
+pip install configargparse
