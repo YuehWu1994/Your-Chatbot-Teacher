@@ -7,6 +7,8 @@ from keras.layers import Dense, Input, Dropout, MaxPooling1D, Conv1D, GlobalMaxP
 from keras.layers import LSTM, Lambda, Bidirectional, concatenate, BatchNormalization, Embedding
 from keras.layers import TimeDistributed
 from keras.optimizers import Adam
+from sklearn.preprocessing import LabelEncoder as le
+from sklearn.utils import class_weight
 import tensorflow as tf
 import keras.backend as K
 
@@ -51,6 +53,19 @@ class CharCNN:
         del corpus
         self.labels = self.labels[:size_limit]
         self.docs = self.docs[:size_limit]
+        
+        class_weights = class_weight.compute_class_weight('balanced',
+                                                  np.unique(self.labels),
+                                                  self.labels)
+        
+        le.fit(self.labels)
+        
+        self.class_weights_dict = dict(zip(le.transform(list(le.classes_)),
+                          class_weights))
+        
+        
+        
+        
         print('data size=', len(self.docs))
     def build_char_dictionary(self, char_dict=None, unknown_label='UNK'):
         """
@@ -290,7 +305,7 @@ class CharCNN:
             
         self.get_model().fit(
             x_train, y_train, validation_data=(x_test, y_test), 
-            batch_size=batch_size, epochs=epochs, shuffle=shuffle)
+            batch_size=batch_size, epochs=epochs, shuffle=shuffle, class_weight=self.class_weights_dict )
         
 #         return self.model['doc_encoder']
 
