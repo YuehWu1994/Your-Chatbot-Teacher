@@ -204,9 +204,11 @@ class CharCNN:
         doc_output = TimeDistributed(sent_encoder)(doc_input)
 
 
+        doc_output = Bidirectional(LSTM(128, return_sequences=True, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
+        doc_output = Dropout(dropout)(doc_output)        
         doc_output = Bidirectional(LSTM(128, return_sequences=False, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
-
         doc_output = Dropout(dropout)(doc_output)
+        
         doc_output = Dense(128, activation='relu')(doc_output)
         doc_output = Dropout(dropout)(doc_output)
         doc_output = Dense(num_of_label, activation='softmax')(doc_output)
@@ -328,4 +330,4 @@ if __name__ == '__main__':
     x_test, y_test = char_cnn.process(X_test, y_test)
 
     char_cnn.build_model()
-    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=10)
+    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=256, epochs=5)
