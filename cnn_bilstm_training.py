@@ -7,7 +7,7 @@ from keras.layers import Dense, Input, Dropout, MaxPooling1D, Conv1D, GlobalMaxP
 from keras.layers import LSTM, Lambda, Bidirectional, concatenate, BatchNormalization, Embedding
 from keras.layers import TimeDistributed
 from keras.optimizers import Adam
-from sklearn.preprocessing import LabelEncoder as le
+from sklearn import preprocessing
 from sklearn.utils import class_weight
 import tensorflow as tf
 import keras.backend as K
@@ -58,6 +58,7 @@ class CharCNN:
                                                   np.unique(self.labels),
                                                   self.labels)
         
+        le = preprocessing.LabelEncoder()
         le.fit(self.labels)
         
         self.class_weights_dict = dict(zip(le.transform(list(le.classes_)),
