@@ -23,3 +23,12 @@ python create_encoder_data.py
 ```haskell =
 python lstmEncoder.py --config config/config.txt
 ```
+
+
+#### Run this repository on Googl Colab
+```haskell =
+!git clone -b [specific_branch] https://[username]:[password]@github.com/JamesQuintero/CS272-NLP-Project.git
+cd CS272-NLP-Project/
+!sh colab_require.sh
+!python cnn_bilstm_training.py --config config/config_colab.txt
+```
