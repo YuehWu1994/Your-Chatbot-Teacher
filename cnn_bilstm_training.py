@@ -348,6 +348,11 @@ if __name__ == '__main__':
 
     char_cnn.build_model()
     char_cnn.train(x_train, y_train, x_test, y_test, batch_size=128, epochs=1)
-    char_cnn.predict(x_test[0])
+    p = char_cnn.predict(x_test[0])
+    print(p)
+    p = char_cnn.predict(x_test[1])
+    print(p)
+    p = char_cnn.predict(x_test[2])
+    print(p)
     
     
