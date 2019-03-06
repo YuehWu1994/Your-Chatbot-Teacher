@@ -23,8 +23,8 @@ class CharCNN:
     CHAR_DICT = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .!?:,\'%-\(\)/$|&;[]"'
     
     def __init__(self, max_len_of_sentence, max_num_of_setnence, verbose=10):
-        #self.args = self._parse_args()
-        #self.data_path = self.args.data_path
+        self.args = self._parse_args()
+        self.data_path = self.args.data_path
         self.max_len_of_sentence = max_len_of_sentence
         self.max_num_of_setnence = max_num_of_setnence
         self.verbose = verbose
@@ -44,7 +44,7 @@ class CharCNN:
         return args
     
     def load_data(self,size_limit=None):
-        with open( "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data", "rb" ) as f:
+        with open( self.data_path, "rb" ) as f:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
@@ -368,11 +368,11 @@ if __name__ == '__main__':
     char_cnn.build_model()
     char_cnn.train(x_train, y_train, x_test, y_test, batch_size=128, epochs=1)
     
-    p = char_cnn.predict(np.reshape(x_test[0], (1,1,256)), True)
+    p = char_cnn.predict(np.reshape(x_test[0], (1,5,256)), True)
     print(p)
-    p = char_cnn.predict(np.reshape(x_test[1], (1,1,256)), True)
+    p = char_cnn.predict(np.reshape(x_test[1], (1,5,256)), True)
     print(p)
-    p = char_cnn.predict(np.reshape(x_test[2], (1,1,256)), True)
+    p = char_cnn.predict(np.reshape(x_test[2], (1,5,256)), True)
     print(p)
     
     
