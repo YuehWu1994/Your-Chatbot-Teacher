@@ -54,6 +54,7 @@ class CharCNN:
         self.labels = self.labels[:size_limit]
         self.docs = self.docs[:size_limit]
         
+        '''
         class_weights = class_weight.compute_class_weight('balanced',
                                                   np.unique(self.labels),
                                                   self.labels)
@@ -64,7 +65,7 @@ class CharCNN:
         self.class_weights_dict = dict(zip(le.transform(list(le.classes_)),
                           class_weights))
         
-        
+        '''
         
         
         print('data size=', len(self.docs))
@@ -220,8 +221,8 @@ class CharCNN:
         doc_output = TimeDistributed(sent_encoder)(doc_input)
 
 
-        doc_output = Bidirectional(LSTM(128, return_sequences=True, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
-        doc_output = Dropout(dropout)(doc_output)        
+        #doc_output = Bidirectional(LSTM(128, return_sequences=True, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
+        #doc_output = Dropout(dropout)(doc_output)        
         doc_output = Bidirectional(LSTM(128, return_sequences=False, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
         doc_output = Dropout(dropout)(doc_output)
         
@@ -338,7 +339,7 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(100000)
+    char_cnn.load_data(200000)
     X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.1, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
