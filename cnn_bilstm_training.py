@@ -339,7 +339,7 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(100000)
+    char_cnn.load_data(10000)
     X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.4, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
@@ -348,6 +348,6 @@ if __name__ == '__main__':
 
     char_cnn.build_model()
     char_cnn.train(x_train, y_train, x_test, y_test, batch_size=128, epochs=1)
-    char_cnn.predict(x_test[0], verbose=1)
+    char_cnn.predict(x_test[0])
     
     
