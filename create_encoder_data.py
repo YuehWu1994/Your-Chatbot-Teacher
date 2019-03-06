@@ -4,6 +4,12 @@
 from wordExtract import WordExtract as ext
 import os
 from random import shuffle
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem.porter import PorterStemmer
+
+
+
 keep =None
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
@@ -31,6 +37,17 @@ for i,c in enumerate(meta):
     meta2id[c] = i
 for i,c in enumerate(sub):
     sub2id[c] = i
+    
+stop_words = set(stopwords.words('english'))
+porter = PorterStemmer()
+
+for i in range(len(comments)):
+    tokens = word_tokenize(comments[i])
+    # filter out stop word
+    words = [w for w in tokens if not w in stop_words]
+    # stem
+    stemmed = [porter.stem(word) for word in words]
+    comments[i] = ' '.join(stemmed)
 
 corpus = []
 for i,c in enumerate(comments):
