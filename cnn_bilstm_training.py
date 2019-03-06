@@ -46,7 +46,7 @@ class CharCNN:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
-                self.labels.append(c[1])
+                self.labels.append(c[2])
             # self.labels = np.array(labels)
         del corpus
         self.labels = self.labels[:size_limit]
@@ -203,6 +203,9 @@ class CharCNN:
         doc_input = Input(shape=(max_num_of_setnence, max_len_of_sentence), dtype='int64')
         doc_output = TimeDistributed(sent_encoder)(doc_input)
 
+        doc_output = Bidirectional(LSTM(128, return_sequences=True, dropout=dropout))(doc_output)
+
+        doc_output = Dropout(dropout)(doc_output)
         doc_output = Bidirectional(LSTM(128, return_sequences=False, dropout=dropout))(doc_output)
 
         doc_output = Dropout(dropout)(doc_output)
