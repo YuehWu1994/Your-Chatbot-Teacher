@@ -211,6 +211,8 @@ class CharCNN:
         doc_output = Dropout(dropout)(doc_output)
         doc_output = Dense(128, activation='relu')(doc_output)
         doc_output = Dropout(dropout)(doc_output)
+        doc_output = Dense(128, activation='relu')(doc_output)
+        doc_output = Dropout(dropout)(doc_output)
         doc_output = Dense(num_of_label, activation='softmax')(doc_output)
 
         doc_encoder = Model(inputs=doc_input, outputs=doc_output)
