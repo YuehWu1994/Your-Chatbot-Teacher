@@ -48,7 +48,7 @@ class CharCNN:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
-                self.labels.append(c[2])
+                self.labels.append(c[1])
             # self.labels = np.array(labels)
         del corpus
         self.labels = self.labels[:size_limit]
@@ -368,12 +368,9 @@ if __name__ == '__main__':
     char_cnn.build_model()
     char_cnn.train(x_train, y_train, x_test, y_test, batch_size=128, epochs=3)
     
-    p = char_cnn.predict(np.reshape(x_test[0], (1,5,256)), True)
-    print(p)
-    p = char_cnn.predict(np.reshape(x_test[1], (1,5,256)), True)
-    print(p)
-    p = char_cnn.predict(np.reshape(x_test[2], (1,5,256)), True)
-    print(p)
+    p = char_cnn.predict(x_test, True)
+    for i in range(200):
+        print(p[i])
     
     
     
