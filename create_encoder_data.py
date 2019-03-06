@@ -3,6 +3,7 @@
 
 from wordExtract import WordExtract as ext
 import os
+from random import shuffle
 keep =None
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
@@ -35,6 +36,8 @@ corpus = []
 for i,c in enumerate(comments):
     corpus.append([c, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
 
+
+shuffle(corpus)
 import pickle as pkl
 
 with open('./data','wb') as f:

@@ -4,10 +4,8 @@ import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.layers import Embedding
-from keras.layers import LSTM
+from keras.layers import Dense, Flatten, Embedding, LSTM, Dropout
+
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
 from keras import backend as K
@@ -38,6 +36,8 @@ class lstmEncoder:
         self.word_index = pkl.load(open('./word_index.pkl', "rb" ))
         self.num_classes = len(np.unique(self.labels))
         self.vocab_size = len(self.word_index) + 1
+        
+        print("Number of class: ", self.num_classes)
 
     def _parse_args(self):
         p = configargparse.ArgParser()
@@ -58,17 +58,20 @@ class lstmEncoder:
 
     def load_data(self):
         ### load intput text
-        # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
+        # self.args.data_path  "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         
         print("LOAD REDDIT")
-        corpus = pkl.load( open( self.args.data_path, "rb" ) )
+        corpus = pkl.load( open(self.args.data_path , "rb" ) )
         docs = []
         labels = []  
         
         for c in corpus:
             docs.append(c[0])
-            labels.append(c[2])
+            labels.append(c[1]) # c[1] for meta class(7 classes)  / c[2] for meta class(51 classes) 
         labels = np.array(labels)
+        
+        docs = docs[:1000]
+        labels = labels[:1000]
         del corpus 
         
         print("Tokenize...")     
@@ -93,7 +96,7 @@ class lstmEncoder:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
         
         ### DEBUG: set data length
-        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(X_train, y_train, X_val, y_val, X_test, y_test, 1000)
+        #X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(X_train, y_train, X_val, y_val, X_test, y_test, 2000)
         self.trainLen = len(X_train)
         
         
@@ -106,7 +109,7 @@ class lstmEncoder:
         ### load the whole embedding into memory
         embeddings_index = dict()
         f = open(self.args.embedding_path, encoding="utf-8")
-        # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
+        # self.args.embedding_path "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         for line in f:
             values = line.split()
             word = values[0]
@@ -132,11 +135,14 @@ class lstmEncoder:
         self.model = Sequential()
         e = Embedding(self.vocab_size, 100, weights=[embedding_matrix], input_length=None, trainable=False)
         self.model.add(e)
-        # self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
-        # self.model.add(MaxPooling1D(pool_size=2))
+        #self.model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        #self.model.add(MaxPooling1D(pool_size=2))
+        #self.model.add(LSTM(200))
+        #self.model.add(LSTM(200, return_sequences=True))
         self.model.add(LSTM(200))
+        #self.model.add(Dropout(0.5))
         #self.model.add(AttentionDecoder(200))
-        self.model.add(Dense(self.num_classes, activation='sigmoid'))
+        self.model.add(Dense(self.num_classes, activation='softmax'))
         self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
         print(self.model.summary())
         return self.model
@@ -153,7 +159,7 @@ class lstmEncoder:
         print('Accuracy: %f' % (accuracy*100))
 
 if __name__ == "__main__":     
-    lstm = lstmEncoder(50)
+    lstm = lstmEncoder(100)
     train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
     lstm.buildModel(embedding_matrix)
     lstm.train(train_g, val_g, X_test, y_test)
