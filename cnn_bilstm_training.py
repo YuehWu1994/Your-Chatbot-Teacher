@@ -199,17 +199,12 @@ class CharCNN:
     
     def _build_document_block(self, sent_encoder, max_len_of_sentence, max_num_of_setnence, 
                              num_of_label, dropout=0.3, 
-                             loss='sparse_categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy']):
+                             loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy']):
         doc_input = Input(shape=(max_num_of_setnence, max_len_of_sentence), dtype='int64')
         doc_output = TimeDistributed(sent_encoder)(doc_input)
 
-        doc_output = Bidirectional(LSTM(128, return_sequences=True, dropout=dropout))(doc_output)
-
-        doc_output = Dropout(dropout)(doc_output)
         doc_output = Bidirectional(LSTM(128, return_sequences=False, dropout=dropout))(doc_output)
 
-        doc_output = Dropout(dropout)(doc_output)
-        doc_output = Dense(128, activation='relu')(doc_output)
         doc_output = Dropout(dropout)(doc_output)
         doc_output = Dense(128, activation='relu')(doc_output)
         doc_output = Dropout(dropout)(doc_output)
@@ -254,7 +249,7 @@ class CharCNN:
 
         return x_preprocess, y_preprocess
     
-    def build_model(self, char_dimension=16, display_summary=False, display_architecture=False, 
+    def build_model(self, char_dimension=36, display_summary=False, display_architecture=False, 
                     loss='sparse_categorical_crossentropy', optimizer='rmsprop', metrics=['categorical_accuracy']):
         if self.verbose > 3:
             print('-----> Stage: build model')
