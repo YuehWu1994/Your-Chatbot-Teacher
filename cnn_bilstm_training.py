@@ -23,8 +23,8 @@ class CharCNN:
     CHAR_DICT = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .!?:,\'%-\(\)/$|&;[]"'
     
     def __init__(self, max_len_of_sentence, max_num_of_setnence, verbose=10):
-        self.args = self._parse_args()
-        self.data_path = self.args.data_path
+        #self.args = self._parse_args()
+        #self.data_path = self.args.data_path
         self.max_len_of_sentence = max_len_of_sentence
         self.max_num_of_setnence = max_num_of_setnence
         self.verbose = verbose
@@ -44,7 +44,7 @@ class CharCNN:
         return args
     
     def load_data(self,size_limit=None):
-        with open( self.args.data_path, "rb" ) as f:
+        with open( "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data", "rb" ) as f:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
@@ -153,6 +153,7 @@ class CharCNN:
         """
             ##### Transform preorcessed data to numpy
         """
+        #import pdb; pdb.set_trace()
         unknown_value = self.char_indices[self.unknown_label]
         
         x = np.ones((len(x_raw), max_num_of_setnence, max_len_of_sentence), dtype=np.int64) * unknown_value
@@ -163,6 +164,7 @@ class CharCNN:
         if max_num_of_setnence is None:
             max_num_of_setnence = self.max_num_of_setnence
 
+        '''
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
                 if j < max_num_of_setnence:
@@ -171,7 +173,24 @@ class CharCNN:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                         else:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices[char]
-
+        '''                    
+        for i, doc in enumerate(x_raw):
+            for j in range(max_num_of_setnence):
+                for k in range(max_len_of_sentence):
+                    if j*max_len_of_sentence+k >= len(doc):
+                        break
+                    char = doc[j*max_len_of_sentence+k]
+                    if char not in self.char_indices:
+                        x[i, j, k] = self.char_indices['UNK']
+                    else:
+                        x[i, j, k] = self.char_indices[char]             
+        '''                
+        for t, char in enumerate(doc[-max_len_of_sentence:]):
+            if char not in self.char_indices:
+                x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
+            else:
+                x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices[char]
+        '''
         return x, y
 
     def _build_character_block(self, block, dropout=0.3, filters=[64, 100], kernel_size=[3, 3], 
@@ -316,9 +335,9 @@ class CharCNN:
             print('-----> Stage: predict')
             
         if return_prob:
-            return self.get_model().predict(x_test)
+            return self.get_model().predict(x)
         
-        return self.get_model().predict(x_test).argmax(axis=-1)
+        return self.get_model().predict(x).argmax(axis=-1)
     
     def get_model(self):
         return self.model['doc_encoder']
@@ -339,7 +358,7 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(10000)
+    char_cnn.load_data(1000)
     X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.4, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
@@ -348,11 +367,13 @@ if __name__ == '__main__':
 
     char_cnn.build_model()
     char_cnn.train(x_train, y_train, x_test, y_test, batch_size=128, epochs=1)
-    p = char_cnn.predict(x_test[0])
+    
+    p = char_cnn.predict(np.reshape(x_test[0], (1,1,256)), True)
     print(p)
-    p = char_cnn.predict(x_test[1])
+    p = char_cnn.predict(np.reshape(x_test[1], (1,1,256)), True)
     print(p)
-    p = char_cnn.predict(x_test[2])
+    p = char_cnn.predict(np.reshape(x_test[2], (1,1,256)), True)
     print(p)
+    
     
     
