@@ -354,7 +354,7 @@ class CharCNN:
         # load weights into new model
         self.model.load_weights("model.h5")
         
-print("Loaded model from disk")
+        print("Loaded model from disk")
 
 if __name__ == '__main__':
     """
