@@ -371,7 +371,7 @@ if __name__ == '__main__':
     Maximum number of sentence is 5
     """
 
-    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=1)
+    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=5)
 
     """
     First of all, we need to prepare meta information including character dictionary 
