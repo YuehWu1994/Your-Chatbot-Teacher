@@ -143,7 +143,7 @@ class CharCNN:
             max_len_of_sentence = self.max_len_of_sentence
         if max_num_of_setnence is None:
             max_num_of_setnence = self.max_num_of_setnence
-
+        '''
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
                 if j < max_num_of_setnence:
@@ -152,6 +152,17 @@ class CharCNN:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                         else:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices[char]
+        '''                   
+        for i, doc in enumerate(x_raw):
+            for j in range(max_num_of_setnence):
+                for k in range(max_len_of_sentence):
+                    if j*max_len_of_sentence+k >= len(doc):
+                        break
+                    char = doc[j*max_len_of_sentence+k]
+                    if char not in self.char_indices:
+                        x[i, j, k] = self.char_indices['UNK']
+                    else:
+                        x[i, j, k] = self.char_indices[char] 
 
         return x, y
 
@@ -317,7 +328,7 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(30000)
+    char_cnn.load_data(60000)
     X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.1, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
