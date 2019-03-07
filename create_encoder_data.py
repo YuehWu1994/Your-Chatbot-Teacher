@@ -108,7 +108,7 @@ corpus = []
 for i,c in enumerate(comments):
     corpus.append([c, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
 
-shuffle(corpus)
+#shuffle(corpus)
 import pickle as pkl
 
 with open('./data','wb') as f:

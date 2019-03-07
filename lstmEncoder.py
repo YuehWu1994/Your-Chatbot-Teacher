@@ -24,7 +24,7 @@ import configargparse
 
 class lstmEncoder:
     def __init__(self, batch_size):
-        self.args = self._parse_args()
+        #self.args = self._parse_args()
         self.batch_size = batch_size
         # determine if we could load pickle or tokenize
         cwdFiles = os.listdir(os.getcwd())
@@ -61,7 +61,7 @@ class lstmEncoder:
         # self.args.data_path  "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         
         print("LOAD REDDIT")
-        corpus = pkl.load( open(self.args.data_path , "rb" ) )
+        corpus = pkl.load( open("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data" , "rb" ) )
         docs = []
         labels = []  
         
@@ -70,8 +70,8 @@ class lstmEncoder:
             labels.append(c[1]) # c[1] for meta class(7 classes)  / c[2] for meta class(51 classes) 
         labels = np.array(labels)
         
-        docs = docs[:1000]
-        labels = labels[:1000]
+        #docs = docs[:10000]
+        #labels = labels[:10000]
         del corpus 
         
         print("Tokenize...")     
@@ -96,7 +96,7 @@ class lstmEncoder:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
         
         ### DEBUG: set data length
-        #X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(X_train, y_train, X_val, y_val, X_test, y_test, 2000)
+        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData(X_train, y_train, X_val, y_val, X_test, y_test, 2000)
         self.trainLen = len(X_train)
         
         
@@ -108,7 +108,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open(self.args.embedding_path, encoding="utf-8")
+        f = open("/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt", encoding="utf-8")
         # self.args.embedding_path "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         for line in f:
             values = line.split()
@@ -160,8 +160,8 @@ class lstmEncoder:
 
 if __name__ == "__main__":     
     lstm = lstmEncoder(100)
-    #train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
-    #lstm.buildModel(embedding_matrix)
-    #lstm.train(train_g, val_g, X_test, y_test)
+    train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
+    lstm.buildModel(embedding_matrix)
+    lstm.train(train_g, val_g, X_test, y_test)
     
     
