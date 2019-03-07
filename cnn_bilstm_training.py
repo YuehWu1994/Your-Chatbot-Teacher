@@ -55,18 +55,7 @@ class CharCNN:
         self.labels = self.labels[:size_limit]
         self.docs = self.docs[:size_limit]
         
-        '''
-        class_weights = class_weight.compute_class_weight('balanced',
-                                                  np.unique(self.labels),
-                                                  self.labels)
-        
-        le = preprocessing.LabelEncoder()
-        le.fit(self.labels)
-        
-        self.class_weights_dict = dict(zip(le.transform(list(le.classes_)),
-                          class_weights))
-        
-        '''
+
         
         
         print('data size=', len(self.docs))
@@ -381,7 +370,7 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(100000)
+    char_cnn.load_data(30000)
     X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.4, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()

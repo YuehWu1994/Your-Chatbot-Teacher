@@ -8,7 +8,7 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-keep =8000
+keep =None
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
 root_dir = "/Users/apple/Desktop/q2_course/cs272/finalProject/reddit-dataset"
@@ -26,9 +26,9 @@ for _, _, fileList in os.walk(root_dir):
             obj = ext(root_dir+'/'+f)
             obj.extract()
             sz = len(obj.meta)
-            comments.extend(obj.text[:min(keep, sz)])
-            metaLabels.extend(obj.meta[:min(keep, sz)])
-            subLabels.extend(obj.sub[:min(keep, sz)])
+            comments.extend(obj.text[:keep])
+            metaLabels.extend(obj.meta[:keep])
+            subLabels.extend(obj.sub[:keep])
 
 meta2id = {}
 sub2id = {}
