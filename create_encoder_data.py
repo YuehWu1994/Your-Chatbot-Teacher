@@ -8,7 +8,7 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-keep =None
+keep =8000
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
 root_dir = "/Users/apple/Desktop/q2_course/cs272/finalProject/reddit-dataset"
