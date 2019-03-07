@@ -165,6 +165,7 @@ class CharCNN:
         if max_num_of_setnence is None:
             max_num_of_setnence = self.max_num_of_setnence
 
+        
         '''
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
@@ -174,7 +175,7 @@ class CharCNN:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                         else:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices[char]
-        '''                    
+                            
         for i, doc in enumerate(x_raw):
             for j in range(max_num_of_setnence):
                 for k in range(max_len_of_sentence):
@@ -184,7 +185,14 @@ class CharCNN:
                     if char not in self.char_indices:
                         x[i, j, k] = self.char_indices['UNK']
                     else:
-                        x[i, j, k] = self.char_indices[char]             
+                        x[i, j, k] = self.char_indices[char]  
+        '''
+        for i, doc in enumerate(x_raw):
+            for t, char in enumerate(doc[-max_len_of_sentence:]):
+                if char not in self.char_indices:
+                    x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
+                else:
+                    x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices[char]
         return x, y
 
     def _build_character_block(self, block, dropout=0.3, filters=[64, 100], kernel_size=[3, 3], 
@@ -362,7 +370,7 @@ if __name__ == '__main__':
     Maximum number of sentence is 5
     """
 
-    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=5)
+    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=1)
 
     """
     First of all, we need to prepare meta information including character dictionary 
