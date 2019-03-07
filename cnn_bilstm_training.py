@@ -24,8 +24,8 @@ class CharCNN:
     CHAR_DICT = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .!?:,\'%-\(\)/$|&;[]"'
     
     def __init__(self, max_len_of_sentence, max_num_of_setnence, verbose=10):
-        self.args = self._parse_args()
-        self.data_path = self.args.data_path
+        #self.args = self._parse_args()
+        #self.data_path = self.args.data_path
         self.max_len_of_sentence = max_len_of_sentence
         self.max_num_of_setnence = max_num_of_setnence
         self.verbose = verbose
@@ -45,7 +45,7 @@ class CharCNN:
         return args
     
     def load_data(self,size_limit=None):
-        with open( self.data_path, "rb" ) as f:
+        with open( "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data", "rb" ) as f:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
