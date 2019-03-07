@@ -13,7 +13,7 @@ from nltk.stem.porter import PorterStemmer
 keep =None
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
-root_dir =  os.getcwd() + "/../reddit-dataset"
+root_dir = "/Users/kaku/Data/reddit-dataset-master/"
 
 #os.chdir(root_dir)
 comments, metaLabels, subLabels = [],[],[]
@@ -42,12 +42,26 @@ stop_words = set(stopwords.words('english'))
 porter = PorterStemmer()
 
 for i in range(len(comments)):
+    if i%1000 ==0:
+        print(i)
     tokens = word_tokenize(comments[i])
     # filter out stop word
-    words = [w for w in tokens if not w in stop_words]
-    # stem
-    stemmed = [porter.stem(word) for word in words]
-    comments[i] = ' '.join(stemmed)
+    link = set(['com','png','gif','imgur','jpg','http','https'])
+    words=[]
+
+    for i in range(len(tokens)):
+        if any([l in tokens[i] for l in link]):
+            continue
+        elif tokens[i-1] in ['http','https']:
+            continue
+        elif len(tokens[i]) > 15:
+            continue
+        words.append(tokens[i])
+
+    words = [porter.stem(w) for w in words if not w in stop_words]
+    comments[i] = ' '.join(words)
+import pdb
+pdb.set_trace
 
 corpus = []
 for i,c in enumerate(comments):
