@@ -36,6 +36,7 @@ class CharCNN:
         p = configargparse.ArgParser()
         p.add('-c', '--config',required=True, is_config_file=True, help='config file path')
         p.add('--data_path', required=True)
+        p.add('--embedding_path', required=False)
         args = p.parse_args()
         return args
     
@@ -216,7 +217,7 @@ class CharCNN:
             print('-----> Stage: preprocess')
             
         self.build_char_dictionary(char_dict, unknown_label)
-        # self.convert_labels()
+        self.convert_labels()
     
     def process(self, x, y,
                 max_len_of_sentence=None, max_num_of_setnence=None, label2indexes=None, sample_size=None):
