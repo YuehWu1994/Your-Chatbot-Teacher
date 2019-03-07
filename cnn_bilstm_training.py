@@ -45,7 +45,7 @@ class CharCNN:
         return args
     
     def load_data(self,size_limit=None):
-        with open(self.data_path, "rb" ) as f:
+        with open(self.data_path , "rb" ) as f:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
@@ -166,7 +166,7 @@ class CharCNN:
             max_num_of_setnence = self.max_num_of_setnence
 
         
-        
+        '''
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
                 if j < max_num_of_setnence:
@@ -186,7 +186,7 @@ class CharCNN:
                         x[i, j, k] = self.char_indices['UNK']
                     else:
                         x[i, j, k] = self.char_indices[char]  
-        
+        '''
         for i, doc in enumerate(x_raw):
             for t, char in enumerate(doc[-max_len_of_sentence:]):
                 if char not in self.char_indices:
