@@ -371,7 +371,7 @@ if __name__ == '__main__':
     Maximum number of sentence is 5
     """
 
-    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=1)
+    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=5)
 
     """
     First of all, we need to prepare meta information including character dictionary 
@@ -389,7 +389,7 @@ if __name__ == '__main__':
     x_test, y_test = char_cnn.process(X_test, y_test)
 
     char_cnn.build_model()
-    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=8)
+    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=15)
     
     p = char_cnn.predict(x_test, False)
     for i in range(200):
