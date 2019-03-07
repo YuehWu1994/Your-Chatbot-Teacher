@@ -166,7 +166,7 @@ class CharCNN:
             max_num_of_setnence = self.max_num_of_setnence
 
         
-        '''
+        
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
                 if j < max_num_of_setnence:
@@ -175,7 +175,7 @@ class CharCNN:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                         else:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices[char]
-                            
+        '''                    
         for i, doc in enumerate(x_raw):
             for j in range(max_num_of_setnence):
                 for k in range(max_len_of_sentence):
@@ -186,13 +186,14 @@ class CharCNN:
                         x[i, j, k] = self.char_indices['UNK']
                     else:
                         x[i, j, k] = self.char_indices[char]  
-        '''
+        
         for i, doc in enumerate(x_raw):
             for t, char in enumerate(doc[-max_len_of_sentence:]):
                 if char not in self.char_indices:
                     x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                 else:
                     x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices[char]
+        '''
         return x, y
 
     def _build_character_block(self, block, dropout=0.3, filters=[64, 100], kernel_size=[3, 3], 
@@ -380,7 +381,7 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(10000)
+    char_cnn.load_data(100000)
     X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.4, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
@@ -388,7 +389,7 @@ if __name__ == '__main__':
     x_test, y_test = char_cnn.process(X_test, y_test)
 
     char_cnn.build_model()
-    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=1)
+    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=3)
     
     p = char_cnn.predict(x_test, False)
     for i in range(200):
