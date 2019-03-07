@@ -8,7 +8,7 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-keep =8000
+keep =None
 
 #### YOU MAY NEED TO CHENGE  root_dir TO POINT TO REDDIT DIRECTORY ###
 root_dir = "/Users/apple/Desktop/q2_course/cs272/finalProject/reddit-dataset"
@@ -37,7 +37,7 @@ for i,c in enumerate(meta):
 for i,c in enumerate(sub):
     sub2id[c] = i
 
-  
+'''
 stop_words = set(stopwords.words('english'))
 porter = PorterStemmer()
 
@@ -107,7 +107,7 @@ for i,c in enumerate(clean_comment):
 corpus = []
 for i,c in enumerate(comments):
     corpus.append([c, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
-'''
+
 shuffle(corpus)
 import pickle as pkl
 
