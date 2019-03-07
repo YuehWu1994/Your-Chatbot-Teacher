@@ -45,7 +45,7 @@ class CharCNN:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
-                self.labels.append(c[2])
+                self.labels.append(c[1])
             # self.labels = np.array(labels)
         del corpus
         self.labels = self.labels[:size_limit]
