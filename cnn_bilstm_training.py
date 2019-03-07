@@ -7,6 +7,7 @@ from keras.layers import Dense, Input, Dropout, MaxPooling1D, Conv1D, GlobalMaxP
 from keras.layers import LSTM, Lambda, Bidirectional, concatenate, BatchNormalization, Embedding
 from keras.layers import TimeDistributed
 from keras.optimizers import Adam
+from keras.models import model_from_json
 from sklearn import preprocessing
 from sklearn.utils import class_weight
 import tensorflow as tf
@@ -184,13 +185,6 @@ class CharCNN:
                         x[i, j, k] = self.char_indices['UNK']
                     else:
                         x[i, j, k] = self.char_indices[char]             
-        '''                
-        for t, char in enumerate(doc[-max_len_of_sentence:]):
-            if char not in self.char_indices:
-                x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
-            else:
-                x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices[char]
-        '''
         return x, y
 
     def _build_character_block(self, block, dropout=0.3, filters=[64, 100], kernel_size=[3, 3], 
@@ -341,6 +335,26 @@ class CharCNN:
     
     def get_model(self):
         return self.model['doc_encoder']
+    
+    def save_model(self):
+        # serialize model to JSON
+        model_json = self.model.to_json()
+        with open("model.json", "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        self.model.save_weights("model.h5")
+        print("Saved model to disk")
+        
+    def load_model(self):
+        # load json and create model
+        json_file = open('model.json', 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        self.model = model_from_json(loaded_model_json)
+        # load weights into new model
+        self.model.load_weights("model.h5")
+        
+print("Loaded model from disk")
 
 if __name__ == '__main__':
     """
@@ -368,9 +382,11 @@ if __name__ == '__main__':
     char_cnn.build_model()
     char_cnn.train(x_train, y_train, x_test, y_test, batch_size=128, epochs=1)
     
-    p = char_cnn.predict(x_test, True)
+    p = char_cnn.predict(x_test, False)
     for i in range(200):
         print(p[i])
+        
+    char_cnn.save_model()
     
     
     
