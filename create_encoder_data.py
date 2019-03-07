@@ -37,7 +37,7 @@ for i,c in enumerate(meta):
 for i,c in enumerate(sub):
     sub2id[c] = i
 
-'''   
+  
 stop_words = set(stopwords.words('english'))
 porter = PorterStemmer()
 
@@ -107,7 +107,7 @@ for i,c in enumerate(clean_comment):
 corpus = []
 for i,c in enumerate(comments):
     corpus.append([c, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
-
+'''
 shuffle(corpus)
 import pickle as pkl
 

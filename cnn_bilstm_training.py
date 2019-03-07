@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import numpy as np
 import keras
 from keras.models import Model, load_model
@@ -7,9 +5,6 @@ from keras.layers import Dense, Input, Dropout, MaxPooling1D, Conv1D, GlobalMaxP
 from keras.layers import LSTM, Lambda, Bidirectional, concatenate, BatchNormalization, Embedding
 from keras.layers import TimeDistributed
 from keras.optimizers import Adam
-from keras.models import model_from_json
-from sklearn import preprocessing
-from sklearn.utils import class_weight
 import tensorflow as tf
 import keras.backend as K
 
@@ -20,7 +15,8 @@ from keras.utils.vis_utils import model_to_dot
 from sklearn.model_selection import train_test_split
 import configargparse
 import pickle as pkl
-class CharCNN:  
+class CharCNN:
+     
     CHAR_DICT = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .!?:,\'%-\(\)/$|&;[]"'
     
     def __init__(self, max_len_of_sentence, max_num_of_setnence, verbose=10):
@@ -40,24 +36,19 @@ class CharCNN:
         p = configargparse.ArgParser()
         p.add('-c', '--config',required=True, is_config_file=True, help='config file path')
         p.add('--data_path', required=True)
-        p.add('--embedding_path', required=False)
         args = p.parse_args()
         return args
     
     def load_data(self,size_limit=None):
-        with open(self.data_path , "rb" ) as f:
+        with open( self.args.data_path, "rb" ) as f:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
-                self.labels.append(c[1])
+                self.labels.append(c[2])
             # self.labels = np.array(labels)
         del corpus
         self.labels = self.labels[:size_limit]
         self.docs = self.docs[:size_limit]
-        
-
-        
-        
         print('data size=', len(self.docs))
     def build_char_dictionary(self, char_dict=None, unknown_label='UNK'):
         """
@@ -104,7 +95,6 @@ class CharCNN:
             print('Index to Label: ', self.index2labels)
             
         self.num_of_label = len(self.label2indexes)
-        print("Number of class: ", self.num_of_label)
 
         return self.label2indexes, self.index2labels
     
@@ -143,7 +133,6 @@ class CharCNN:
         """
             ##### Transform preorcessed data to numpy
         """
-        #import pdb; pdb.set_trace()
         unknown_value = self.char_indices[self.unknown_label]
         
         x = np.ones((len(x_raw), max_num_of_setnence, max_len_of_sentence), dtype=np.int64) * unknown_value
@@ -154,8 +143,6 @@ class CharCNN:
         if max_num_of_setnence is None:
             max_num_of_setnence = self.max_num_of_setnence
 
-        
-        
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
                 if j < max_num_of_setnence:
@@ -164,25 +151,7 @@ class CharCNN:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                         else:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices[char]
-        '''                    
-        for i, doc in enumerate(x_raw):
-            for j in range(max_num_of_setnence):
-                for k in range(max_len_of_sentence):
-                    if j*max_len_of_sentence+k >= len(doc):
-                        break
-                    char = doc[j*max_len_of_sentence+k]
-                    if char not in self.char_indices:
-                        x[i, j, k] = self.char_indices['UNK']
-                    else:
-                        x[i, j, k] = self.char_indices[char]  
-        
-        for i, doc in enumerate(x_raw):
-            for t, char in enumerate(doc[-max_len_of_sentence:]):
-                if char not in self.char_indices:
-                    x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
-                else:
-                    x[i, 0, (max_len_of_sentence-1-t)] = self.char_indices[char]
-        '''
+
         return x, y
 
     def _build_character_block(self, block, dropout=0.3, filters=[64, 100], kernel_size=[3, 3], 
@@ -231,12 +200,9 @@ class CharCNN:
         doc_input = Input(shape=(max_num_of_setnence, max_len_of_sentence), dtype='int64')
         doc_output = TimeDistributed(sent_encoder)(doc_input)
 
+        doc_output = Bidirectional(LSTM(128, return_sequences=False, dropout=dropout))(doc_output)
 
-        #doc_output = Bidirectional(LSTM(128, return_sequences=True, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
-        #doc_output = Dropout(dropout)(doc_output)        
-        doc_output = Bidirectional(LSTM(128, return_sequences=False, dropout=dropout, recurrent_dropout=dropout, activation='tanh'))(doc_output)
         doc_output = Dropout(dropout)(doc_output)
-        
         doc_output = Dense(128, activation='relu')(doc_output)
         doc_output = Dropout(dropout)(doc_output)
         doc_output = Dense(num_of_label, activation='softmax')(doc_output)
@@ -250,7 +216,7 @@ class CharCNN:
             print('-----> Stage: preprocess')
             
         self.build_char_dictionary(char_dict, unknown_label)
-        self.convert_labels()
+        # self.convert_labels()
     
     def process(self, x, y,
                 max_len_of_sentence=None, max_num_of_setnence=None, label2indexes=None, sample_size=None):
@@ -327,32 +293,12 @@ class CharCNN:
             print('-----> Stage: predict')
             
         if return_prob:
-            return self.get_model().predict(x)
+            return self.get_model().predict(x_test)
         
-        return self.get_model().predict(x).argmax(axis=-1)
+        return self.get_model().predict(x_test).argmax(axis=-1)
     
     def get_model(self):
         return self.model['doc_encoder']
-    
-    def save_model(self):
-        # serialize model to JSON
-        model_json = self.model.to_json()
-        with open("model.json", "w") as json_file:
-            json_file.write(model_json)
-        # serialize weights to HDF5
-        self.model.save_weights("model.h5")
-        print("Saved model to disk")
-        
-    def load_model(self):
-        # load json and create model
-        json_file = open('model.json', 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
-        self.model = model_from_json(loaded_model_json)
-        # load weights into new model
-        self.model.load_weights("model.h5")
-        
-        print("Loaded model from disk")
 
 if __name__ == '__main__':
     """
@@ -371,20 +317,11 @@ if __name__ == '__main__':
     We have to transform raw input training data and testing to numpy format for keras input
     """
     char_cnn.load_data(30000)
-    X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.4, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.1, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
     x_train, y_train = char_cnn.process(X_train, y_train)
     x_test, y_test = char_cnn.process(X_test, y_test)
 
     char_cnn.build_model()
-    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=3)
-    
-    p = char_cnn.predict(x_test, False)
-    for i in range(200):
-        print(p[i])
-        
-    char_cnn.save_model()
-    
-    
-    
+    char_cnn.train(x_train, y_train, x_test, y_test, batch_size=64, epochs=10)
