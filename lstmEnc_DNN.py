@@ -105,6 +105,8 @@ class lstmEncoder:
         print("max_train_len: "+str(self.max_train_len))
         X_train = pad_sequences(X_train, maxlen=self.max_train_len, padding='pre')
         y_train = ku.to_categorical(y_train, num_classes=self.num_classes)
+        X_val = pad_sequences(X_val, maxlen=self.max_train_len, padding='pre')
+        y_val = ku.to_categorical(y_val, num_classes=self.num_classes)
         
         
         ### pad test data
@@ -172,24 +174,26 @@ class lstmEncoder:
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 15, shuffle=False, validation_data=(X_val, y_val))
+        history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 1, shuffle=False, validation_data=(X_val, y_val))
         
         plt.plot(history.history['categorical_accuracy'])
-        plt.plot(history.history['val_acc'])
+        plt.plot(history.history['val_categorical_accuracy'])
         plt.title('Model accuracy')
         plt.ylabel('Accuracy')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.show()
+        plt.savefig('acc.png')
         
         # Plot training & validation loss values
-        plt.plot(history.history['categorical_crossentropy'])
+        plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
         plt.title('Model loss')
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.show()
+        plt.savefig('lose.png')
 
 
         #saves model
