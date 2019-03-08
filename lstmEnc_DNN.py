@@ -174,7 +174,7 @@ class lstmEncoder:
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        self.history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 25, 
+        self.history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 18, 
                                  shuffle=False, validation_data=(X_val, y_val))
         
         fig = plt.figure()
