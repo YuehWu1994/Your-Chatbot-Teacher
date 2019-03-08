@@ -123,6 +123,9 @@ class lstmEncoder:
         model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=5, 
                             validation_data=dev_batch_generator(),validation_steps=50, callbacks=callbacks)
 
+        loss, accuracy = model.evaluate(X_test, y_test)
+        print("loss %f " % (loss*100))
+        print('Accuracy: %f' % (accuracy*100))
         y_hat = model.predict(wc_emb.get_batch_input(X_test))
         import pdb;pdb.set_trace()
         print('test_acc:',sum(np.where( np.argmax(y_hat) == y_test) )/len(y_test) )
