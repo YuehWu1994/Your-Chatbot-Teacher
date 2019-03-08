@@ -22,7 +22,6 @@ from wrapper import WordCharEmbd
 import configargparse
 import keras
 from keras.callbacks import ModelCheckpoint
-from Eval import Evaluate_on_epoch
 
 class lstmEncoder:
     def __init__(self, batch_size):
@@ -119,10 +118,13 @@ class lstmEncoder:
 
         filepath = "wc_emb_best.hdf5"
         checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-        tester = Evaluate_on_epoch(X_test,y_test)
-        callbacks=[checkpoint, tester]
+        callbacks=[checkpoint]
         model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=10, 
                             validation_data=dev_batch_generator(),validation_steps=50, callbacks=callbacks)
+
+        y_hat = self.model.predict(X_test)
+        print('test_acc:',sum(np.where( np.argmax(y_hat) == y_test) )/len(y_test) )
+        return
 
 
     def load_data(self):
