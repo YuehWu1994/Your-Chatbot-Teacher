@@ -21,7 +21,8 @@ from DataGenerator import Generator as gen
 from wrapper import WordCharEmbd
 import configargparse
 import keras
-
+from keras.callbacks import ModelCheckpoint
+from Eval import Evaluate_on_epoch
 
 class lstmEncoder:
     def __init__(self, batch_size):
@@ -86,7 +87,10 @@ class lstmEncoder:
         model.summary()
         self.docs = [d.split(' ')[:20] for d in self.docs]
         print(self.docs[0])
+        
         X_train, X_test, y_train, y_test = train_test_split(self.docs, self.labels, test_size=0.1, random_state=42)
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+        
         
         y_train = ku.to_categorical(y_train, num_classes=self.num_classes)
         y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
@@ -105,16 +109,22 @@ class lstmEncoder:
             start = 0
             end = 200
             while True:
-                yield wc_emb.get_batch_input(X_test[start:end]), np.array(y_test[start:end])
+                yield wc_emb.get_batch_input(X_val[start:end]), np.array(y_val[start:end])
                 if end+200>len(X_test):
                     start = 0
                     end = 200
                 else:
                     start,end = start+200,end+200
-        
+       
+
+        filepath = "wc_emb_best.hdf5"
+        checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+        tester = Evaluate_on_epoch(X_test,y_test)
+        callbacks=[checkpoint, tester]
         model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=10, 
-                            validation_data=dev_batch_generator(),validation_steps=50)
-    
+                            validation_data=dev_batch_generator(),validation_steps=50, callbacks=callbacks)
+
+
     def load_data(self):
         ### load intput text
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
@@ -270,6 +280,6 @@ if __name__ == "__main__":
     # train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
     # lstm.buildModel(embedding_matrix)
     # lstm.train(train_g, val_g, X_test, y_test)
-    lstm._exp(200000)
+    lstm._exp(2000)
     
     
