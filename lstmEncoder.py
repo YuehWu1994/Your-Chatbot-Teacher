@@ -93,6 +93,7 @@ class lstmEncoder:
         
         y_train = ku.to_categorical(y_train, num_classes=self.num_classes)
         y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
+        y_val = ku.to_categorical(y_val, num_classes=self.num_classes)
         def train_batch_generator():
             start = 0
             end = self.batch_size
@@ -119,7 +120,7 @@ class lstmEncoder:
         filepath = "wc_emb_best.hdf5"
         checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
         callbacks=[checkpoint]
-        model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=10, 
+        model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=5, 
                             validation_data=dev_batch_generator(),validation_steps=50, callbacks=callbacks)
 
         y_hat = self.model.predict(X_test)
