@@ -1,0 +1,2 @@
+embedding_path = ../glove/glove.6B.100d.txt
+data_path = ../data 
