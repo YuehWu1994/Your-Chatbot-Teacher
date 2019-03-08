@@ -81,14 +81,15 @@ class lstmEncoder:
         model = keras.models.Model(inputs=inputs, outputs=softmax_layer)
         model.compile(
         optimizer='adam',
-        loss=keras.losses.sparse_categorical_crossentropy,
-        metrics=[keras.metrics.sparse_categorical_accuracy],)
+        loss=keras.losses.categorical_crossentropy,
+        metrics=[keras.metrics.categorical_accuracy],)
         model.summary()
         self.docs = [d.split(' ')[:20] for d in self.docs]
         print(self.docs[0])
         X_train, X_test, y_train, y_test = train_test_split(self.docs, self.labels, test_size=0.1, random_state=42)
         
-
+        y_train = ku.to_categorical(y_train, num_classes=self.num_classes)
+        y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
         def train_batch_generator():
             start = 0
             end = self.batch_size
