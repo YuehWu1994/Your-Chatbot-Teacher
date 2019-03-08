@@ -83,18 +83,18 @@ class lstmEncoder:
         X_train, X_test, y_train, y_test = train_test_split(encoded_docs, self.labels, test_size=0.1, random_state=42)
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
         
+
+        ### DEBUG: set data length
+        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 300000)
+        self.trainLen = len(X_train)
+        
+        
         print("X_train: "+str(len(X_train)))
         print("y_train: "+str(len(y_train)))
         print("X_val: "+str(len(X_val)))
         print("y_val: "+str(len(y_val)))
         print("X_test: "+str(len(X_test)))
         print("y_test: "+str(len(y_test)))
-
-
-        ### DEBUG: set data length
-        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 200000)
-        self.trainLen = len(X_train)
-
         
 
         ### pad train data
@@ -170,7 +170,7 @@ class lstmEncoder:
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 10, shuffle=False)
+        self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 20, shuffle=False)
 
         #saves model
         try:
