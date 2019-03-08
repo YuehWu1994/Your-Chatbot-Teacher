@@ -17,18 +17,17 @@ from sklearn.model_selection import train_test_split
 import math
 import pickle
 from DataGenerator import Generator as gen
-
+from keras_wc_embd import get_dicts_generator, WordCharEmbd, get_embedding_weights_from_file
 import configargparse
+import keras
 
 
 class lstmEncoder:
     def __init__(self, batch_size):
         self.args = self._parse_args()
-        docs, labels = self.load_data()
-        self.docs = docs
-        self.labels = labels
+        self.docs, self.labels = self.load_data()
         self.batch_size = batch_size
-        self.num_classes = len(np.unique(labels))
+        self.num_classes = len(np.unique(self.labels))
         self.vocab_size = 0 # not assign yet
 
 
@@ -49,6 +48,71 @@ class lstmEncoder:
         y_test = y_test[:limit]  
         return X_train, y_train, X_val, y_val, X_test, y_test
 
+    def _exp(self,size_limit=None):
+        self.docs = self.docs[:size_limit]
+        self.labels = self.labels[:size_limit]
+        # self.docs = [d.split(' ')[:20] for d in self.docs]
+        wc_emb = WordCharEmbd( 
+        word_min_freq=2,
+        char_min_freq=2,
+        word_ignore_case=False,
+        char_ignore_case=False,)
+        for doc in self.docs:
+            wc_emb.update_dicts(doc.split(' '))
+        word_embd_weights = get_embedding_weights_from_file(wc_emb.get_dicts()[0], self.args.embedding_path, ignore_case=True)
+        print(word_embd_weights.shape)
+        inputs, embd_layer = wc_emb.get_embedding_layer(
+        word_embd_dim=100,
+        char_embd_dim=30,
+        char_hidden_dim=150,
+        word_embd_file_path=self.args.embedding_path,
+        word_embd_trainable=True,
+        char_hidden_layer_type='lstm')
+       
+        lstm_layer = LSTM(units=50)(embd_layer)
+        prelu_activated = PReLU()(lstm_layer)
+        dropout1 = Dropout(0.1)(prelu_activated)
+        dense1 = Dense(50,activation='selu')(dropout1)
+        dropout2 = Dropout(0.1)(dense1)
+        dense2 = Dense(50,activation='selu')(dropout2)
+        dropout3 = Dropout(0.1)(dense2)
+        softmax_layer = Dense(self.num_classes, activation='softmax')(dropout3)
+        model = keras.models.Model(inputs=inputs, outputs=softmax_layer)
+        model.compile(
+        optimizer='adam',
+        loss=keras.losses.sparse_categorical_crossentropy,
+        metrics=[keras.metrics.sparse_categorical_accuracy],)
+        model.summary()
+        self.docs = [d.split(' ')[:20] for d in self.docs]
+        print(self.docs[0])
+        X_train, X_test, y_train, y_test = train_test_split(self.docs, self.labels, test_size=0.1, random_state=42)
+        
+
+        def train_batch_generator():
+            start = 0
+            end = self.batch_size
+            while True:
+                yield wc_emb.get_batch_input(X_train[start:end]), np.array(y_train[start:end])
+                if end+self.batch_size>len(X_train):
+                    start = 0
+                    end = self.batch_size
+                else:
+                    start,end = start+self.batch_size,end+self.batch_size
+        
+        def dev_batch_generator():
+            start = 0
+            end = 200
+            while True:
+                yield wc_emb.get_batch_input(X_test[start:end]), np.array(y_test[start:end])
+                if end+200>len(X_test):
+                    start = 0
+                    end = 200
+                else:
+                    start,end = start+200,end+200
+        
+        model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=10, 
+                            validation_data=dev_batch_generator(),validation_steps=50)
+    
     def load_data(self):
         ### load intput text
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
@@ -201,8 +265,9 @@ class lstmEncoder:
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
-    lstm.buildModel(embedding_matrix)
-    lstm.train(train_g, val_g, X_test, y_test)
+    # train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
+    # lstm.buildModel(embedding_matrix)
+    # lstm.train(train_g, val_g, X_test, y_test)
+    lstm._exp(200000)
     
     
