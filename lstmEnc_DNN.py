@@ -15,10 +15,12 @@ from keras.layers import PReLU
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
 import keras.utils as ku
+from keras.utils.vis_utils import plot_model
 from sklearn.model_selection import train_test_split
 import math
 import pickle
 from DataGenerator import Generator as gen
+import matplotlib.pyplot as plt
 
 import configargparse
 
@@ -56,7 +58,7 @@ class lstmEncoder:
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         
         print("LOAD_DATA...")
-        corpus = pickle.load( open( self.args.data_path, "rb" ) )
+        corpus = pickle.load( open( self.args.data_path , "rb" ) )
         docs = []
         labels = []  
         
@@ -116,7 +118,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open(self.args.embedding_path, encoding="utf-8")
+        f = open( self.args.embedding_path, encoding="utf-8")
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         for line in f:
             values = line.split()
@@ -143,7 +145,7 @@ class lstmEncoder:
         # print("Embedding matrix: "+str(embedding_matrix[:3]))
         
         # return train_g, val_g, X_test, y_test, embedding_matrix
-        return X_train, y_train, X_test, y_test, embedding_matrix
+        return X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix
 
 
     def buildModel(self, embedding_matrix):
@@ -166,11 +168,29 @@ class lstmEncoder:
         
         
     # def train(self,  train_g, val_g, X_test, y_test):
-    def train(self, X_train, y_train, X_test, y_test):
+    def train(self, X_train, y_train, X_val, y_val, X_test, y_test):
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 20, shuffle=False)
+        history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 15, shuffle=False, validation_data=(X_val, y_val))
+        
+        plt.plot(history.history['categorical_accuracy'])
+        plt.plot(history.history['val_acc'])
+        plt.title('Model accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.show()
+        
+        # Plot training & validation loss values
+        plt.plot(history.history['categorical_crossentropy'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.show()
+
 
         #saves model
         try:
@@ -187,22 +207,10 @@ class lstmEncoder:
 
 
 
-        #makes sure the accuracy calculated previous is the actual accuracy (it is)
-        # y_test_pred = self.model.predict(X_test)
-        # total_correct = 0
-        # for x in range(0, len(y_test_pred)):
-        #     index = np.where(y_test_pred[x]==np.amax(y_test_pred[x]))
-        #     actual_index = np.where(y_test[x]==1)
-        #     if index == actual_index:
-        #         total_correct+=1
-        # print("Accuracy: "+str(total_correct/len(y_test)))
-
-
-
-
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
+    train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb()
     lstm.buildModel(embedding_matrix)
-    lstm.train(train_g, val_g, X_test, y_test)
+    lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
+    plot_model(lstm.model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
