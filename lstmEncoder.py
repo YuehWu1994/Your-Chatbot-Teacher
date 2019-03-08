@@ -124,6 +124,7 @@ class lstmEncoder:
                             validation_data=dev_batch_generator(),validation_steps=50, callbacks=callbacks)
 
         y_hat = model.predict(wc_emb.get_batch_input(X_test))
+        import pdb;pdb.set_trace()
         print('test_acc:',sum(np.where( np.argmax(y_hat) == y_test) )/len(y_test) )
         return
 
