@@ -174,7 +174,7 @@ class lstmEncoder:
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 1, shuffle=False, validation_data=(X_val, y_val))
+        history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 15, shuffle=False, validation_data=(X_val, y_val))
         
         plt.plot(history.history['categorical_accuracy'])
         plt.plot(history.history['val_categorical_accuracy'])
@@ -193,7 +193,7 @@ class lstmEncoder:
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.show()
-        plt.savefig('lose.png')
+        plt.savefig('loss.png')
 
 
         #saves model
