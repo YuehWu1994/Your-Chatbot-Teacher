@@ -55,8 +55,7 @@ class lstmEncoder:
 
     def load_data(self):
         ### load intput text
-        # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
-        
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         print("LOAD_DATA...")
         corpus = pickle.load( open( self.args.data_path , "rb" ) )
         docs = []
@@ -121,7 +120,8 @@ class lstmEncoder:
         ### load the whole embedding into memory
         embeddings_index = dict()
         f = open( self.args.embedding_path, encoding="utf-8")
-        # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
+        
         for line in f:
             values = line.split()
             word = values[0]
@@ -174,26 +174,29 @@ class lstmEncoder:
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 15, shuffle=False, validation_data=(X_val, y_val))
+        self.history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 25, 
+                                 shuffle=False, validation_data=(X_val, y_val))
         
-        plt.plot(history.history['categorical_accuracy'])
-        plt.plot(history.history['val_categorical_accuracy'])
+        fig = plt.figure()
+        plt.plot(self.history.history['categorical_accuracy'], 'b')
+        plt.plot(self.history.history['val_categorical_accuracy'], 'g')
         plt.title('Model accuracy')
         plt.ylabel('Accuracy')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.show()
-        plt.savefig('acc.png')
+        fig.savefig('acc.png')
         
         # Plot training & validation loss values
-        plt.plot(history.history['loss'])
-        plt.plot(history.history['val_loss'])
+        fig = plt.figure()
+        plt.plot(self.history.history['loss'], 'b')
+        plt.plot(self.history.history['val_loss'], 'g')
         plt.title('Model loss')
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.show()
-        plt.savefig('loss.png')
+        fig.savefig('loss.png')
 
 
         #saves model
