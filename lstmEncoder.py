@@ -17,7 +17,8 @@ from sklearn.model_selection import train_test_split
 import math
 import pickle
 from DataGenerator import Generator as gen
-from keras_wc_embd import get_dicts_generator, WordCharEmbd, get_embedding_weights_from_file
+# from keras_wc_embd import get_dicts_generator, WordCharEmbd, get_embedding_weights_from_file
+from wrapper import WordCharEmbd
 import configargparse
 import keras
 
@@ -59,8 +60,8 @@ class lstmEncoder:
         char_ignore_case=False,)
         for doc in self.docs:
             wc_emb.update_dicts(doc.split(' '))
-        word_embd_weights = get_embedding_weights_from_file(wc_emb.get_dicts()[0], self.args.embedding_path, ignore_case=True)
-        print(word_embd_weights.shape)
+        # word_embd_weights = get_embedding_weights_from_file(wc_emb.get_dicts()[0], self.args.embedding_path, ignore_case=True)
+        # print(word_embd_weights.shape)
         inputs, embd_layer = wc_emb.get_embedding_layer(
         word_embd_dim=100,
         char_embd_dim=30,
