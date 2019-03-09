@@ -289,7 +289,7 @@ class lstmEncoder:
 
 
 if __name__ == "__main__":     
-    batch_size = 100
+    batch_size = 50
     lstm = lstmEncoder(batch_size)
     # train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
     # lstm.buildModel(embedding_matrix)
