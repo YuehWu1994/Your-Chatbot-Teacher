@@ -50,9 +50,11 @@ class lstmEncoder:
         return X_train, y_train, X_val, y_val, X_test, y_test
 
     def _exp(self,size_limit=None):
-        shuf_ind = shuffle([i for i in range(len(self.labels))])
+        shuf_ind = [i for i in range(len(self.labels))]
+        shuffle(shuf_ind)
         self.docs = [self.docs[i] for i in shuf_ind]
         self.labels = [self.labels[i] for i in shuf_ind]
+        del shuf_ind
         self.docs = self.docs[:size_limit]
         self.labels = self.labels[:size_limit]
         # self.docs = [d.split(' ')[:20] for d in self.docs]
