@@ -37,7 +37,7 @@ class lstmEncoder:
         p.add('-c', '--config',required=True, is_config_file=True, help='config file path')
         p.add('--embedding_path', required=True)
         p.add('--data_path', required=True)
-        p.add('--size_limit',required=False)
+        p.add('--size_limit',required=False, type=int)
         args = p.parse_args()
         return args
     
