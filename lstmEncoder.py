@@ -37,6 +37,7 @@ class lstmEncoder:
         p.add('-c', '--config',required=True, is_config_file=True, help='config file path')
         p.add('--embedding_path', required=True)
         p.add('--data_path', required=True)
+        p.add('--size_limit',required=False)
         args = p.parse_args()
         return args
     
@@ -49,12 +50,13 @@ class lstmEncoder:
         y_test = y_test[:limit]  
         return X_train, y_train, X_val, y_val, X_test, y_test
 
-    def _exp(self,size_limit=None):
+    def _exp(self):
         shuf_ind = [i for i in range(len(self.labels))]
         shuffle(shuf_ind)
         self.docs = [self.docs[i] for i in shuf_ind]
         self.labels = [self.labels[i] for i in shuf_ind]
         del shuf_ind
+        size_limit = self.args.size_limit
         self.docs = self.docs[:size_limit]
         self.labels = self.labels[:size_limit]
         # self.docs = [d.split(' ')[:20] for d in self.docs]
@@ -125,7 +127,7 @@ class lstmEncoder:
         filepath = "wc_emb_best.hdf5"
         checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
         callbacks=[checkpoint]
-        model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=5, 
+        model.fit_generator(generator=train_batch_generator(), steps_per_epoch= math.ceil(len(self.docs) / self.batch_size), epochs=20, 
                             validation_data=dev_batch_generator(),validation_steps=50, callbacks=callbacks)
 
         loss, accuracy = model.evaluate(wc_emb.get_batch_input(X_test), y_test)
@@ -287,11 +289,11 @@ class lstmEncoder:
 
 
 if __name__ == "__main__":     
-    batch_size = 50
+    batch_size = 100
     lstm = lstmEncoder(batch_size)
     # train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
     # lstm.buildModel(embedding_matrix)
     # lstm.train(train_g, val_g, X_test, y_test)
-    lstm._exp(2000)
+    lstm._exp()
     
     
