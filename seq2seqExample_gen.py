@@ -3,14 +3,19 @@
 
 from random import randint
 import numpy as np
+from keras import backend as K
 from keras.utils import to_categorical
 from keras.models import Model
-from keras.layers import Input
 from keras.layers import LSTM
 from keras.layers import Dense
+from keras.layers import Embedding
+from keras.layers import GRU, Input
 
 from seq2seq_generator import Generator as gen
+from lstmEnc_DNN import lstmEncoder 
 import math
+import copy 
+
 
 # generate a sequence of random integers
 def generate_sequence(length, n_unique):
@@ -104,37 +109,57 @@ def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 def one_hot_decode(encoded_seq):
 	return [np.argmax(vector) for vector in encoded_seq]
 
-# configure problem
-n_features = 50 + 1
-n_steps_in = 6
-n_steps_out = 3
-# define model
-train, infenc, infdec = define_models(n_features, n_features, 128)
-train.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
-# generate training dataset
-X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 100000)
-train_g = gen(X1, X2, y, 50, n_features)
 
+if __name__ == "__main__":   
 
-print(X1.shape,X2.shape,y.shape)
-
-# train model
-train.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X1) / 50), epochs=1)
-
-# evaluate LSTM
-total, correct = 100, 0
-for _ in range(total):
-	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
-	X1, X2, y = categorical(X1, X2, y, n_features)
-
+    batch_size = 50
+    lstm = lstmEncoder(batch_size)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb()
     
-	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
-	if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
-		correct += 1
-print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
-# spot check some examples
-for _ in range(10):
-	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
-	X1, X2, y = categorical(X1, X2, y, n_features)
-	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
-	print('X=%s y=%s, yhat=%s' % (one_hot_decode(X1[0]), one_hot_decode(y[0]), one_hot_decode(target)))
+    lstm.buildModel(embedding_matrix)
+    lstm.model.load_weights("./classifier.h5")
+    
+    # get hidden layer output
+    print("get last hidden layer output")
+    get_last_hidden_layer_output = K.function([lstm.model.layers[0].input],
+                                  [lstm.model.layers[-2].output])
+    layer_output = get_last_hidden_layer_output([X_train])[0]
+    
+    print(layer_output.shape)
+    layer_output = np.hstack((layer_output,np.zeros((layer_output.shape[0], 50))))
+
+    '''
+	n_steps_in = 6
+	n_steps_out = 3
+
+    ''' 
+    y = copy.copy(X_train)
+    train_g = gen(X_train, layer_output, y, 50, lstm.vocab_size)
+
+	# define model
+    train, infenc, infdec = define_models(lstm.vocab_size, lstm.vocab_size, 128)	
+    train.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
+
+    print(X_train.shape,layer_output.shape,y.shape)
+
+	# train model
+	#train.fit([X1, X2], y, epochs=1)
+    train.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / 50), epochs=1)
+
+	# evaluate LSTM
+	# total, correct = 100, 0
+	# for _ in range(total):
+	# 	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
+	# 	X1, X2, y = categorical(X1, X2, y, n_features)
+
+	    
+	# 	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
+	# 	if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
+	# 		correct += 1
+	# print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
+	# # spot check some examples
+	# for _ in range(10):
+	# 	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
+	# 	X1, X2, y = categorical(X1, X2, y, n_features)
+	# 	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
+	# 	print('X=%s y=%s, yhat=%s' % (one_hot_decode(X1[0]), one_hot_decode(y[0]), one_hot_decode(target)))
