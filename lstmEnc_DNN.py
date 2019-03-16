@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # python my_script.py --my-config config.txt  
 import numpy as np
+import os
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
@@ -18,22 +19,65 @@ import keras.utils as ku
 from keras.utils.vis_utils import plot_model
 from sklearn.model_selection import train_test_split
 import math
-import pickle
+import itertools
+import pickle as pkl
 from DataGenerator import Generator as gen
 import matplotlib.pyplot as plt
-
+from sklearn.metrics import confusion_matrix
 import configargparse
+
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
 
 
 class lstmEncoder:
     def __init__(self, batch_size):
         self.args = self._parse_args()
-        docs, labels = self.load_data()
-        self.docs = docs
-        self.labels = labels
         self.batch_size = batch_size
-        self.num_classes = len(np.unique(labels))
-        self.vocab_size = 0 # not assign yet
+        
+        cwdFiles = os.listdir(os.getcwd())
+        if('enc_doc.pkl' not in cwdFiles or 'label.pkl' not in cwdFiles or 'word_index.pkl' not in cwdFiles):  
+            self.load_data()
+            
+        self.encoded_docs = pkl.load( open('./enc_doc.pkl', "rb" ) )
+        self.labels = pkl.load(open('./label.pkl', "rb" ))
+        self.word_index = pkl.load(open('./word_index.pkl', "rb" ))
+        self.num_classes = len(np.unique(self.labels))
+        self.vocab_size = len(self.word_index) + 1
+        
+        print("Number of class: ", self.num_classes)
 
 
     def _parse_args(self):
@@ -57,31 +101,36 @@ class lstmEncoder:
         ### load intput text
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
         print("LOAD_DATA...")
-        corpus = pickle.load( open( self.args.data_path , "rb" ) )
+
+        corpus = pkl.load( open(self.args.data_path, "rb" ) )
         docs = []
         labels = []  
         
         for c in corpus:
             docs.append(c[0])
-            labels.append(c[2])
+            labels.append(c[2]) # c[1] for meta class(7 classes)  / c[2] for meta class(51 classes) 
         labels = np.array(labels)
+
         del corpus 
-        return docs, labels
+        
+        print("Tokenize...")     
+        t = Tokenizer()
+        t.fit_on_texts(docs)
+        ### integer encode the documents
+        encoded_docs = t.texts_to_sequences(docs)
+        
+        print("WRITE PKL")
+        with open('./enc_doc.pkl','wb') as f:
+            pkl.dump(encoded_docs,f)
+        with open('./label.pkl','wb') as f:
+            pkl.dump(labels,f)
+        with open('./word_index.pkl','wb') as f:
+            pkl.dump(t.word_index,f)  
     
     def create_Emb(self):
-        ### prepare tokenizer
-        t = Tokenizer()
-        t.fit_on_texts(self.docs)
-        self.vocab_size = len(t.word_index) + 1
-
-        print("Vocab size: "+str(self.vocab_size))
-        
-        ### integer encode the documents
-        encoded_docs = t.texts_to_sequences(self.docs)
-
         ### split in random
         print("Shuffling...")
-        X_train, X_test, y_train, y_test = train_test_split(encoded_docs, self.labels, test_size=0.1, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(self.encoded_docs, self.labels, test_size=0.1, random_state=42)
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
         
 
@@ -130,23 +179,13 @@ class lstmEncoder:
         f.close()
         print('Loaded %s word vectors.' % len(embeddings_index))
         
-        ### create a weight matrix for words in training docs
+        ### create a weight matrix for words in training docs                
         embedding_matrix = np.zeros((self.vocab_size, 100))
-        for word, i in t.word_index.items():
-        	embedding_vector = embeddings_index.get(word)
-        	if embedding_vector is not None:
-        		embedding_matrix[i] = embedding_vector
-                
-        # train_g = gen(X_train, y_train, self.batch_size, self.num_classes)
-        # val_g = gen(X_val, y_val, self.batch_size, self.num_classes)
+        for word, i in self.word_index.items():
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                embedding_matrix[i] = embedding_vector
 
-        # print("X_train: "+str(X_train[:3]))
-        # print("y_train: "+str(y_train[:3]))
-        # print("X_test: "+str(X_test[:3]))
-        # print("y_test: "+str(y_test[:3]))
-        # print("Embedding matrix: "+str(embedding_matrix[:3]))
-        
-        # return train_g, val_g, X_test, y_test, embedding_matrix
         return X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix
 
 
@@ -219,5 +258,11 @@ if __name__ == "__main__":
     lstm = lstmEncoder(batch_size)
     train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb()
     lstm.buildModel(embedding_matrix)
-    lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
-    plot_model(lstm.model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+    lstm.model.load_weights("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/classifier.h5")
+    cnf_matrix=confusion_matrix(np.argmax(y_test, axis = 1), np.argmax(lstm.model.predict(X_test), axis = 1))
+np.set_printoptions(precision=2)
+plt.figure(figsize=(20,10))
+
+#plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,title='Normalized confusion matrix class weight unbalanced')
+    #lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
+    #plot_model(lstm.model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)

@@ -162,6 +162,7 @@ if __name__ == "__main__":
     lstm = lstmEncoder(100)
     train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
     lstm.buildModel(embedding_matrix)
-    lstm.train(train_g, val_g, X_test, y_test)
-    
+    #lstm.train(train_g, val_g, X_test, y_test)
+    from keras.utils.vis_utils import plot_model
+    plot_model(lstm.model, to_file='baseline_model_plot.png', show_shapes=True, show_layer_names=True)
     
