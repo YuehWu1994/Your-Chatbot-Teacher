@@ -75,7 +75,7 @@ def define_models(n_input, n_output, n_units):
 def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 	# encode
 	state = infenc.predict(source)
-	print(len(state.shape))
+	print(len(state))
 	# start of sequence input
 	target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)
 	print(target_seq)    
@@ -84,10 +84,12 @@ def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 	for t in range(n_steps):
 		# predict next char
 		yhat, h, c = infdec.predict([target_seq] + state)
+		print(len(h))
 		# store prediction
 		output.append(yhat[0,0,:])
 		# update state
 		state = [h, c]
+		print(len(state))
 		# update target sequence
 		target_seq = yhat
 	return np.array(output)

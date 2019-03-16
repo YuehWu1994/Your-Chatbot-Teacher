@@ -26,50 +26,29 @@ class Generator(object):
     def __getitem__(self):
         while True:
             # init input sequence and output sequence
-            input_seq1 = []
             output_seq = self.label[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
             
             # extract indexes for this batch
-            id_list = self.inds[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
-            for i in range(self.batch_size):
-                input_seq1.append(self.x1[id_list[i]])
-            
-            # set up x by one-hot vector
-            X1 = np.zeros((self.batch_size, self.numClass))
-            X1 = ku.to_categorical([input_seq1], num_classes=self.numClass)
+            X1 = self.x1[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
             X2 = self.x2[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
                
             # set up y by one-hot vector
             y = np.zeros((self.batch_size, self.numClass))
             y = ku.to_categorical([output_seq], num_classes=self.numClass)
 
-            X1 = np.reshape(X1, (X1.shape[1], X1.shape[2], X1.shape[3]))
             y = np.reshape(y, (y.shape[1], y.shape[2], y.shape[3]))
-            
-            print(X1.shape, X2.shape, y.shape)
-            
+                        
             self.iter+=1
             
             # stop criteria
-            if self.iter>=len(self.X1)//self.batch_size:
+            if self.iter>=len(self.x1)//self.batch_size:
                 self.iter=0
                 np.random.shuffle(self.inds)
             yield [X1, X2], y
 
 
 
-
-if __name__ == "__main__":     
-    batch_size = 50
-    lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb()
-    
-    del y_train, y_val, y_test
-    
-    lstm.buildModel(embedding_matrix)
-    lstm.model.load_weights("./classifier.h5")
-    
-    
+def get_hidden_layer_output(lstm, X_train):
     # get hidden layer output
     print("get last hidden layer output")
     get_last_hidden_layer_output = K.function([lstm.model.layers[0].input],
@@ -77,12 +56,9 @@ if __name__ == "__main__":
     layer_output = get_last_hidden_layer_output([X_train])[0]
     
     print(layer_output.shape)
-    layer_output = np.hstack((layer_output,np.zeros((layer_output.shape[0], 50))))
-    
-    # y
-    y = copy.copy(X_train)
-    
-    
+    layer_output = np.hstack((layer_output,np.zeros((layer_output.shape[0], 50))))   
+
+def define_model(lstm):
     # build seq2seq model
     word_dim = 100
     
@@ -104,10 +80,75 @@ if __name__ == "__main__":
     print(training_model.summary())
     
     # Also create a model for inference (this returns the GRU state)
-    decoder_model = Model([word_vec_input, hiddenLayer_inputs], [decoder_outputs, state_h])
+	# define inference decoder
+    decoder_state_input_h = Input(shape=(word_dim,))
+    decoder_states_inputs = [decoder_state_input_h]
+    gru_1_output =  decoder_gru_1(embedded, initial_state=decoder_states_inputs)
+    gru_2_output, state_h = decoder_gru_2(gru_1_output)
+    #/decoder_outputs, state_h = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs) # temp ignore state_c
+    decoder_states = [state_h]
+    decoder_outputs = decoder_dense(gru_2_output)
+    inference_model = Model([word_vec_input] + decoder_states_inputs, [decoder_outputs] + decoder_states)
     
+    return training_model, inference_model
+
+
+def predict_sequence(inference_model, X1, X2, n_steps, cardinality):
+    #encode
+    state = X2
+	# start of sequence input
+    #target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)
+	# collect predictions
+    output = list()
+    for t in range(n_steps):
+        # predict next char
+        yhat, h, c = inference_model.predict([X1[t]] + state)
+        # store prediction
+        output.append(yhat[0,0,:])
+        # update state
+        state = [h]
+        # update target sequence by next word
+        #target_seq = X1[t+1]
+    return np.array(output)
+
+
+def one_hot_decode(encoded_seq):
+	return [np.argmax(vector) for vector in encoded_seq]
+
+
+if __name__ == "__main__":     
+    batch_size = 50
+    lstm = lstmEncoder(batch_size)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb()
+    
+    del y_train, y_val, y_test
+    
+    lstm.buildModel(embedding_matrix)
+    lstm.model.load_weights("./classifier.h5")
+    
+    layer_output = get_hidden_layer_output(lstm, X_train)
+    y = copy.copy(X_train)
+    
+    
+    training_model, inference_model = define_model(lstm)
+
     # generator
     train_g = Generator(X_train, layer_output, y, lstm.batch_size, lstm.vocab_size)
     training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=1)
-    #training_model.fit([X_train, layer_output], reshapeX_train, epochs=10, batch_size = lstm.batch_size);
-    
+
+    # evaluate LSTM
+    total, correct = 100, 0
+    test_layer_output = get_hidden_layer_output(lstm, X_test[:total])
+    y_t = copy.copy(X_test[:total])
+    for i in range(total):
+        # extract indexes for this batch
+        X1 = X_test[i]
+        X2 = test_layer_output[i]
+        
+        y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
+        y = np.reshape(y, (y.shape[1], y.shape[2], y.shape[3]))
+        
+        target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
+        if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
+            correct += 1
+    print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
