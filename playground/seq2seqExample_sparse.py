@@ -26,7 +26,7 @@ def get_dataset(n_in, n_out, cardinality, n_samples):
 		target_in = [0] + target[:-1]
 		# encode
 		src_encoded = to_categorical([source], num_classes=cardinality)
-		tar_encoded = to_categorical([target], num_classes=cardinality)
+		tar_encoded = target
 		tar2_encoded = to_categorical([target_in], num_classes=cardinality)
 		# store
 		X1.append(src_encoded)
@@ -35,14 +35,15 @@ def get_dataset(n_in, n_out, cardinality, n_samples):
     
 	X1 = np.array(X1)
 	X2 = np.array(X2)
-	y = np.array(y)     
+	y = np.array(y) -1
+
 	if X1.shape[0] != 0:   
         	X1 = np.reshape(X1, (X1.shape[0], X1.shape[2], X1.shape[3]))
         	X2 = np.reshape(X2, (X2.shape[0], X2.shape[2], X2.shape[3]))
-        	y = np.reshape(y, (y.shape[0], y.shape[2], y.shape[3]))
-
+            
+	y = np.reshape(y, (y.shape[0], y.shape[1], 1))   
         
-	return np.array(X1), np.array(X2), np.array(y)
+	return X1, X2, y
 
 # returns train, inference_encoder and inference_decoder models
 def define_models(n_input, n_output, n_units):
@@ -75,10 +76,8 @@ def define_models(n_input, n_output, n_units):
 def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 	# encode
 	state = infenc.predict(source)
-	print(len(state.shape))
 	# start of sequence input
 	target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)
-	print(target_seq)    
 	# collect predictions
 	output = list()
 	for t in range(n_steps):
@@ -102,14 +101,14 @@ n_steps_in = 6
 n_steps_out = 3
 # define model
 train, infenc, infdec = define_models(n_features, n_features, 128)
-train.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
+train.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['acc'])
+print(train.summary())
 # generate training dataset
 X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 100000)
 print(X1.shape,X2.shape,y.shape)
 
 # train model
 train.fit([X1, X2], y, epochs=1)
-
 # evaluate LSTM
 total, correct = 100, 0
 for _ in range(total):

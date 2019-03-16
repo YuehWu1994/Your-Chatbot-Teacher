@@ -9,6 +9,9 @@ from keras.layers import Input
 from keras.layers import LSTM
 from keras.layers import Dense
 
+from seq2seq_generator import Generator as gen
+import math
+
 # generate a sequence of random integers
 def generate_sequence(length, n_unique):
 	return [randint(1, n_unique-1) for _ in range(length)]
@@ -25,9 +28,9 @@ def get_dataset(n_in, n_out, cardinality, n_samples):
 		# create padded input target sequence
 		target_in = [0] + target[:-1]
 		# encode
-		src_encoded = to_categorical([source], num_classes=cardinality)
-		tar_encoded = to_categorical([target], num_classes=cardinality)
-		tar2_encoded = to_categorical([target_in], num_classes=cardinality)
+		src_encoded = source
+		tar_encoded = target
+		tar2_encoded = target_in
 		# store
 		X1.append(src_encoded)
 		X2.append(tar2_encoded)
@@ -36,13 +39,20 @@ def get_dataset(n_in, n_out, cardinality, n_samples):
 	X1 = np.array(X1)
 	X2 = np.array(X2)
 	y = np.array(y)     
-	if X1.shape[0] != 0:   
-        	X1 = np.reshape(X1, (X1.shape[0], X1.shape[2], X1.shape[3]))
-        	X2 = np.reshape(X2, (X2.shape[0], X2.shape[2], X2.shape[3]))
-        	y = np.reshape(y, (y.shape[0], y.shape[2], y.shape[3]))
 
-        
 	return np.array(X1), np.array(X2), np.array(y)
+
+def categorical(X1, X2, y, cardinality):
+	X1 = to_categorical([X1], num_classes=cardinality)
+	X2 = to_categorical([X2], num_classes=cardinality)
+	y = to_categorical([y], num_classes=cardinality)
+
+	X1 = np.reshape(X1, (X1.shape[1], X1.shape[2], X1.shape[3]))
+	X2 = np.reshape(X2, (X2.shape[1], X2.shape[2], X2.shape[3]))
+	y = np.reshape(y, (y.shape[1], y.shape[2], y.shape[3]))
+	return X1, X2, y		
+		
+    
 
 # returns train, inference_encoder and inference_decoder models
 def define_models(n_input, n_output, n_units):
@@ -75,10 +85,8 @@ def define_models(n_input, n_output, n_units):
 def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 	# encode
 	state = infenc.predict(source)
-	print(len(state.shape))
 	# start of sequence input
 	target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)
-	print(target_seq)    
 	# collect predictions
 	output = list()
 	for t in range(n_steps):
@@ -105,15 +113,22 @@ train, infenc, infdec = define_models(n_features, n_features, 128)
 train.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 # generate training dataset
 X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 100000)
+train_g = gen(X1, X2, y, 50, n_features)
+
+
 print(X1.shape,X2.shape,y.shape)
 
 # train model
-train.fit([X1, X2], y, epochs=1)
+#train.fit([X1, X2], y, epochs=1)
+train.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X1) / 50), epochs=1)
 
 # evaluate LSTM
 total, correct = 100, 0
 for _ in range(total):
 	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
+	X1, X2, y = categorical(X1, X2, y, n_features)
+
+    
 	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
 	if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
 		correct += 1
@@ -121,5 +136,6 @@ print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
 # spot check some examples
 for _ in range(10):
 	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
+	X1, X2, y = categorical(X1, X2, y, n_features)
 	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
 	print('X=%s y=%s, yhat=%s' % (one_hot_decode(X1[0]), one_hot_decode(y[0]), one_hot_decode(target)))
