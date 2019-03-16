@@ -64,9 +64,11 @@ if __name__ == "__main__":
     lstm = lstmEncoder(batch_size)
     X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb()
     
-    reshapeX_train = np.reshape(X_train,(X_train.shape[0],X_train.shape[1],1))
+    del y_train, y_val, y_test
+    
     lstm.buildModel(embedding_matrix)
     lstm.model.load_weights("./classifier.h5")
+    
     
     # get hidden layer output
     print("get last hidden layer output")

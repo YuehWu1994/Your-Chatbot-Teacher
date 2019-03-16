@@ -64,7 +64,7 @@ def plot_confusion_matrix(cm, classes,
 
 class lstmEncoder:
     def __init__(self, batch_size):
-        #self.args = self._parse_args()
+        self.args = self._parse_args()
         self.batch_size = batch_size
         
         cwdFiles = os.listdir(os.getcwd())
@@ -102,7 +102,7 @@ class lstmEncoder:
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"  self.args.data_path
         print("LOAD_DATA...")
 
-        corpus = pkl.load( open("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data" , "rb" ) )
+        corpus = pkl.load( open(self.args.data_path , "rb" ) )
         docs = []
         labels = []  
         
@@ -168,7 +168,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open( "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt" , encoding="utf-8")
+        f = open( self.args.embedding_path , encoding="utf-8")
         # self.args.embedding_path  "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         
         for line in f:
