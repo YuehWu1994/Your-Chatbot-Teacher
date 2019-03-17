@@ -127,7 +127,7 @@ class lstmEncoder:
         with open('./word_index.pkl','wb') as f:
             pkl.dump(t.word_index,f)  
     
-    def create_Emb(self):
+    def create_Emb(self, limitNum):
         ### split in random
         print("Shuffling...")
         X_train, X_test, y_train, y_test = train_test_split(self.encoded_docs, self.labels, test_size=0.1, random_state=42)
@@ -135,7 +135,7 @@ class lstmEncoder:
         
 
         ### DEBUG: set data length
-        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 300000)
+        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, limitNum)
         self.trainLen = len(X_train)
         
         
@@ -253,7 +253,7 @@ class lstmEncoder:
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb()
+    train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
     lstm.buildModel(embedding_matrix)
     lstm.model.load_weights("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/classifier.h5")
     cnf_matrix=confusion_matrix(np.argmax(y_test, axis = 1), np.argmax(lstm.model.predict(X_test), axis = 1))
