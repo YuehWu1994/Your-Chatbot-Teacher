@@ -64,7 +64,7 @@ def plot_confusion_matrix(cm, classes,
 
 class lstmEncoder:
     def __init__(self, batch_size):
-        self.args = self._parse_args()
+        #self.args = self._parse_args()
         self.batch_size = batch_size
         
         cwdFiles = os.listdir(os.getcwd())
@@ -102,7 +102,7 @@ class lstmEncoder:
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"  self.args.data_path
         print("LOAD_DATA...")
 
-        corpus = pkl.load( open(self.args.data_path , "rb" ) )
+        corpus = pkl.load( open("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data" , "rb" ) )
         docs = []
         labels = []  
         
@@ -168,7 +168,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open( self.args.embedding_path , encoding="utf-8")
+        f = open( "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt" , encoding="utf-8")
         # self.args.embedding_path  "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         
         for line in f:
@@ -186,7 +186,7 @@ class lstmEncoder:
             if embedding_vector is not None:
                 embedding_matrix[i] = embedding_vector
 
-        return X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix
+        return X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix, embeddings_index
 
 
     def buildModel(self, embedding_matrix):
@@ -253,7 +253,7 @@ class lstmEncoder:
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
+    train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix, embeddings_index = lstm.create_Emb(300000)
     lstm.buildModel(embedding_matrix)
     lstm.model.load_weights("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/classifier.h5")
     cnf_matrix=confusion_matrix(np.argmax(y_test, axis = 1), np.argmax(lstm.model.predict(X_test), axis = 1))

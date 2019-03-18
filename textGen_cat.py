@@ -26,16 +26,26 @@ class Generator(object):
     def __getitem__(self):
         while True:
             # init input sequence and output sequence
+            input_seq1 = []
             output_seq = self.label[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
             
             # extract indexes for this batch
+            id_list = self.inds[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
+            for i in range(self.batch_size):
+                input_seq1.append(self.x1[id_list[i]])
+            
             X1 = self.x1[self.iter*self.batch_size:(self.iter+1)*self.batch_size]
             X2 = self.x2[self.iter*self.batch_size:(self.iter+1)*self.batch_size]  
+            
+            
             # set up y by one-hot vector
             y = np.zeros((self.batch_size, self.numClass))
             y = ku.to_categorical([output_seq], num_classes=self.numClass)
             
+            
+            #reshape
             y = np.reshape(y, (y.shape[1], y.shape[2], y.shape[3]))
+            #print(X1.shape, X2.shape, y.shape)
             self.iter+=1
             
             # stop criteria
@@ -60,47 +70,49 @@ def define_model(lstm):
     word_dim = 100
     
     word_vec_input = Input(shape=(lstm.max_train_len,))
-    hiddenLayer_inputs = Input(shape=(100,))
+    hiddenLayer_state_inputs = Input(shape=(100,))
+    hiddenLayer_state = [hiddenLayer_state_inputs]
     decoder_embed = Embedding(input_dim=lstm.vocab_size, output_dim=word_dim, weights=[embedding_matrix], input_length=None, trainable=False)
-    decoder_gru_1 = GRU(word_dim, return_sequences=True, return_state=False)
-    decoder_gru_2 = GRU(word_dim, return_sequences=True, return_state=True)
+    decoder_gru_1 = GRU(100, return_sequences=True, return_state=False)
+    decoder_gru_2 = GRU(100, return_sequences=True, return_state=True)
     decoder_dense = Dense(lstm.vocab_size, activation='softmax')
     
     embedded = decoder_embed(word_vec_input)
-    gru_1_output = decoder_gru_1(embedded, initial_state=hiddenLayer_inputs)
+    gru_1_output = decoder_gru_1(embedded, initial_state=hiddenLayer_state)
     gru_2_output, state_h = decoder_gru_2(gru_1_output)
     decoder_outputs = decoder_dense(gru_2_output)
     
     # Define the model that will be used for training
-    training_model = Model([word_vec_input, hiddenLayer_inputs], decoder_outputs)
+    training_model = Model([word_vec_input, hiddenLayer_state_inputs], decoder_outputs)
     training_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
     print(training_model.summary())
     
-    # Also create a model for inference (this returns the GRU state)
-	# define inference decoder
-    decoder_state_input_h = Input(shape=(word_dim,))
+	# Define inference decoder
+    decoder_state_input_h = Input(shape=(100,))
     decoder_states_inputs = [decoder_state_input_h]
-    gru_1_output =  decoder_gru_1(embedded, initial_state=decoder_states_inputs)
+    
+    embedded_word = Input(shape=(1,100))
+    gru_1_output =  decoder_gru_1(embedded_word, initial_state=decoder_states_inputs)
     gru_2_output, state_h = decoder_gru_2(gru_1_output)
-    #/decoder_outputs, state_h = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs) # temp ignore state_c
+
     decoder_states = [state_h]
     decoder_outputs = decoder_dense(gru_2_output)
-    inference_model = Model([word_vec_input] + decoder_states_inputs, [decoder_outputs] + decoder_states)
-    
+    inference_model = Model([embedded_word] + decoder_states_inputs, [decoder_outputs] + decoder_states)
+    print(inference_model.summary())
     return training_model, inference_model
 
 
 def predict_sequence(inference_model, X1, X2, n_steps, cardinality):
     #encode
-    state = [X2, np.zeros(100)]
-    print(X1.shape)
-	# start of sequence input
-    #target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)
-	# collect predictions
+    X2 = np.reshape(X2, (1, len(X2)))
+    state = [X2]   
+
     output = list()
     for t in range(n_steps):
-        # predict next char
-        yhat, h = inference_model.predict(X1[t] + state)
+        
+        # predict next word
+        x = np.reshape(embedding_matrix[X1[t]], (1,1,100))
+        yhat, h = inference_model.predict([x] + state)
         # store prediction
         output.append(yhat[0,0,:])
         # update state
@@ -117,10 +129,10 @@ def one_hot_decode(encoded_seq):
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(100)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix, embeddings_index = lstm.create_Emb(300)
     
     del y_train, y_val, y_test
-    
+    '''
     lstm.buildModel(embedding_matrix)
     lstm.model.load_weights("./classifier.h5")
     
@@ -130,14 +142,13 @@ if __name__ == "__main__":
     
     training_model, inference_model = define_model(lstm)
 
-    # generator
+    # train
     train_g = Generator(X_train, layer_output, y, lstm.batch_size, lstm.vocab_size)
-    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=1)
-
+    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=6)
 
 
     # evaluate LSTM
-    total, correct = 100, 0
+    total, correct = 10000, 0
     test_layer_output = get_hidden_layer_output(lstm, X_test[:total])
     y_t = copy.copy(X_test[:total])
     for i in range(total):
@@ -147,9 +158,10 @@ if __name__ == "__main__":
         
         y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
         y = np.reshape(y, (y.shape[1], y.shape[2]))
-        
+                
         target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
         if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
             correct += 1
     print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
+    '''
     

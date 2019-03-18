@@ -68,28 +68,28 @@ def define_models(n_input, n_output, n_units):
 	decoder_states = [state_h, state_c]
 	decoder_outputs = decoder_dense(decoder_outputs)
 	decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states)
+	print(decoder_model.summary())
 	# return all models
 	return model, encoder_model, decoder_model
 
 # generate target given source sequence
 def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 	# encode
-	state = infenc.predict(source)
-	print(len(state))
+	state = infenc.predict(source)  
+	print(state)     
+	print(type(state)) 
+	print(len(state)) 
 	# start of sequence input
-	target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)
-	print(target_seq)    
+	target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)  
 	# collect predictions
 	output = list()
 	for t in range(n_steps):
 		# predict next char
 		yhat, h, c = infdec.predict([target_seq] + state)
-		print(len(h))
 		# store prediction
 		output.append(yhat[0,0,:])
 		# update state
 		state = [h, c]
-		print(len(state))
 		# update target sequence
 		target_seq = yhat
 	return np.array(output)
@@ -104,9 +104,10 @@ n_steps_in = 6
 n_steps_out = 3
 # define model
 train, infenc, infdec = define_models(n_features, n_features, 128)
+print(train.summary())
 train.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 # generate training dataset
-X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 100000)
+X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 10000)
 print(X1.shape,X2.shape,y.shape)
 
 # train model
@@ -116,6 +117,7 @@ train.fit([X1, X2], y, epochs=1)
 total, correct = 100, 0
 for _ in range(total):
 	X1, X2, y = get_dataset(n_steps_in, n_steps_out, n_features, 1)
+    
 	target = predict_sequence(infenc, infdec, X1, n_steps_out, n_features)
 	if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
 		correct += 1
