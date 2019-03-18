@@ -7,7 +7,7 @@ from keras.models import Model
 from keras.layers import Embedding
 from keras.layers import GRU, Input
 from lstmEnc_DNN import lstmEncoder 
-from countBLEU import countBLEU as bleu
+from countBLEU import countBLEU
 import keras.utils as ku
 import copy
 import math
@@ -169,7 +169,8 @@ if __name__ == "__main__":
     total, correct = 100, 0
     test_layer_output = get_hidden_layer_output(lstm, X_test[:total])
     y_t = copy.copy(X_test[:total])
-    #bleu.genTestCorpus(y_t)
+    
+    bleu = countBLEU(lstm)
     
     for i in range(total):
         # extract indexes for this batch
@@ -183,7 +184,7 @@ if __name__ == "__main__":
         #print(one_hot_decode(y))
         #print(one_hot_decode(target))
         interpret(lstm, one_hot_decode(y), one_hot_decode(target))
-        bleu.count_sentence_BLEU(lstm, one_hot_decode(y), one_hot_decode(target))
+        bleu.count_BLEU(one_hot_decode(y), one_hot_decode(target), np.argmax(y_test[i]))
         
         if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
             correct += 1
