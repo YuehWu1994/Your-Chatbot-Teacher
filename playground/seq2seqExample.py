@@ -40,7 +40,7 @@ def get_dataset(n_in, n_out, cardinality, n_samples):
         	X1 = np.reshape(X1, (X1.shape[0], X1.shape[2], X1.shape[3]))
         	X2 = np.reshape(X2, (X2.shape[0], X2.shape[2], X2.shape[3]))
         	y = np.reshape(y, (y.shape[0], y.shape[2], y.shape[3]))
-
+         
         
 	return np.array(X1), np.array(X2), np.array(y)
 
@@ -76,9 +76,6 @@ def define_models(n_input, n_output, n_units):
 def predict_sequence(infenc, infdec, source, n_steps, cardinality):
 	# encode
 	state = infenc.predict(source)  
-	print(state)     
-	print(type(state)) 
-	print(len(state)) 
 	# start of sequence input
 	target_seq = np.array([0.0 for _ in range(cardinality)]).reshape(1, 1, cardinality)  
 	# collect predictions

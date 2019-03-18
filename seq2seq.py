@@ -7,9 +7,11 @@ from keras.models import Model
 from keras.layers import Embedding
 from keras.layers import GRU, Input
 from lstmEnc_DNN import lstmEncoder 
+from countBLEU import countBLEU as bleu
 import keras.utils as ku
 import copy
 import math
+
 
 class Generator(object):
     def __init__(self, x1, x2, label,batch_size, numClass):
@@ -120,12 +122,9 @@ def predict_sequence(inference_model, X1, X2, n_steps, cardinality):
         #target_seq = X1[t+1]
     return np.array(output)
 
-
-
-
-
 def one_hot_decode(encoded_seq):
 	return [np.argmax(vector) for vector in encoded_seq]
+
 
 
 def interpret(lstm, y, target):
@@ -140,7 +139,7 @@ def interpret(lstm, y, target):
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300)
     
     del y_train, y_val, y_test
     
@@ -157,11 +156,21 @@ if __name__ == "__main__":
     train_g = Generator(X_train, layer_output, y, lstm.batch_size, lstm.vocab_size)
     training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=3)
 
+    # save model
+    try:
+        file_name = "./seq2seqTrain.h5"
+        training_model.save(file_name)
+        inf_file_name = "./seq2seqInference.h5"
+        inference_model.save(inf_file_name)
+    except Exception as error:
+        print("Couldn't save model")
 
     # evaluate LSTM
     total, correct = 100, 0
     test_layer_output = get_hidden_layer_output(lstm, X_test[:total])
     y_t = copy.copy(X_test[:total])
+    #bleu.genTestCorpus(y_t)
+    
     for i in range(total):
         # extract indexes for this batch
         X1 = X_test[i]
@@ -170,9 +179,12 @@ if __name__ == "__main__":
         y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
         y = np.reshape(y, (y.shape[1], y.shape[2]))       
         target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
+        
         #print(one_hot_decode(y))
         #print(one_hot_decode(target))
         interpret(lstm, one_hot_decode(y), one_hot_decode(target))
+        bleu.count_sentence_BLEU(lstm, one_hot_decode(y), one_hot_decode(target))
+        
         if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
             correct += 1
     print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
