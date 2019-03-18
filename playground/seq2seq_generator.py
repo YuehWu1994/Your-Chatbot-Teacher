@@ -12,6 +12,7 @@ import keras.utils as ku
 from tensorflow import set_random_seed
 import numpy as np
 from numpy.random import seed
+
 import pickle as pkl
 
 class Generator(object):

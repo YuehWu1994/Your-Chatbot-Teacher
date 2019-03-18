@@ -12,7 +12,6 @@ import copy
 import math
 
 class Generator(object):
-
     def __init__(self, x1, x2, label,batch_size, numClass):
         self.x1 = x1
         self.x2 = x2
@@ -62,7 +61,7 @@ def get_hidden_layer_output(lstm, X_train):
                                   [lstm.model.layers[-2].output])
     layer_output = get_last_hidden_layer_output([X_train])[0]
     
-    layer_output = np.hstack((layer_output,np.zeros((layer_output.shape[0], 50)))) 
+    #layer_output = np.hstack((layer_output,np.zeros((layer_output.shape[0], 50)))) 
     return layer_output
 
 def define_model(lstm):
@@ -70,11 +69,11 @@ def define_model(lstm):
     word_dim = 100
     
     word_vec_input = Input(shape=(lstm.max_train_len,))
-    hiddenLayer_state_inputs = Input(shape=(100,))
+    hiddenLayer_state_inputs = Input(shape=(50,))
     hiddenLayer_state = [hiddenLayer_state_inputs]
     decoder_embed = Embedding(input_dim=lstm.vocab_size, output_dim=word_dim, weights=[embedding_matrix], input_length=None, trainable=False)
-    decoder_gru_1 = GRU(100, return_sequences=True, return_state=False)
-    decoder_gru_2 = GRU(100, return_sequences=True, return_state=True)
+    decoder_gru_1 = GRU(50, return_sequences=True, return_state=False)
+    decoder_gru_2 = GRU(50, return_sequences=True, return_state=True)
     decoder_dense = Dense(lstm.vocab_size, activation='softmax')
     
     embedded = decoder_embed(word_vec_input)
@@ -88,7 +87,7 @@ def define_model(lstm):
     print(training_model.summary())
     
 	# Define inference decoder
-    decoder_state_input_h = Input(shape=(100,))
+    decoder_state_input_h = Input(shape=(50,))
     decoder_states_inputs = [decoder_state_input_h]
     
     embedded_word = Input(shape=(1,100))
@@ -122,17 +121,29 @@ def predict_sequence(inference_model, X1, X2, n_steps, cardinality):
     return np.array(output)
 
 
+
+
+
 def one_hot_decode(encoded_seq):
 	return [np.argmax(vector) for vector in encoded_seq]
 
 
+def interpret(lstm, y, target):
+    ans = ""
+    predSeq = ""
+    for i in range(lstm.max_train_len):
+        ans +=  "<UNK> " if (y[i] == 0) else (lstm.index_word[y[i]] + ' ')
+        predSeq +=  "<UNK> " if (target[i] == 0) else (lstm.index_word[target[i]] + ' ')
+    print(ans)
+    print(predSeq)
+
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix, embeddings_index = lstm.create_Emb(300)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
     
     del y_train, y_val, y_test
-    '''
+    
     lstm.buildModel(embedding_matrix)
     lstm.model.load_weights("./classifier.h5")
     
@@ -144,11 +155,11 @@ if __name__ == "__main__":
 
     # train
     train_g = Generator(X_train, layer_output, y, lstm.batch_size, lstm.vocab_size)
-    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=6)
+    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=3)
 
 
     # evaluate LSTM
-    total, correct = 10000, 0
+    total, correct = 100, 0
     test_layer_output = get_hidden_layer_output(lstm, X_test[:total])
     y_t = copy.copy(X_test[:total])
     for i in range(total):
@@ -157,11 +168,13 @@ if __name__ == "__main__":
         X2 = test_layer_output[i]
         
         y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
-        y = np.reshape(y, (y.shape[1], y.shape[2]))
-                
+        y = np.reshape(y, (y.shape[1], y.shape[2]))       
         target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
-        if np.array_equal(one_hot_decode(y[0]), one_hot_decode(target)):
+        #print(one_hot_decode(y))
+        #print(one_hot_decode(target))
+        interpret(lstm, one_hot_decode(y), one_hot_decode(target))
+        if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
             correct += 1
     print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
-    '''
+    
     
