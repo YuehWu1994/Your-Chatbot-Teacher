@@ -7,7 +7,7 @@ from keras.models import Model
 from keras.layers import Embedding
 from keras.layers import GRU, Input
 from lstmEnc_DNN import lstmEncoder 
-from countBLEU import countBLEU
+from evaluate import countBLEU, countPerplexity
 import keras.utils as ku
 import copy
 import math

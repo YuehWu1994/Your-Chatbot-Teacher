@@ -3,14 +3,16 @@
 import numpy as np
 from nltk.translate.bleu_score import corpus_bleu
 from nltk.translate.bleu_score import sentence_bleu
+from nltk.translate.gleu_score import sentence_gleu
 
 
 
 class countBLEU:
     def __init__(self, lstm):
         self.comment = 0
-        self.sentenceScore = 0
-        self.classtenceScore = 0
+        self.bleuScore = 0.0
+        self.gleuScore = 0.0
+        #self.classtenceScore = 0
         self.max_train_len = lstm.max_train_len
         self.index_word = lstm.index_word
         self.num_classes = lstm.num_classes
@@ -37,11 +39,15 @@ class countBLEU:
                 reference[0].append(self.index_word[y[i]])
 
         score = sentence_bleu(reference, candidate)
+        g_score = sentence_gleu(reference, candidate)
         #classScore = corpus_bleu(self.corpus[label], candidate)
         
-        self.sentenceScore += score
+        self.bleuScore += score
+        self.gleuScore += g_score
         #self.classtenceScore += classScore
         self.comment += 1
-        print(len(self.corpus[label]))
         print(score)
+        print(g_score)
+
+        
         
