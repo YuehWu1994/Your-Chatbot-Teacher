@@ -16,20 +16,9 @@ class countBLEU:
         self.max_train_len = lstm.max_train_len
         self.index_word = lstm.index_word
         self.num_classes = lstm.num_classes
-        #from itertools import repeat
-        #self.corpus = [[] for i in repeat(None, self.num_classes)]
-        
-    '''
-    def genTestCorpus(self, testEnc, test_label):
-        for i, enc in enumerate(testEnc):
-            label = np.argmax(test_label[i])
-            comment = []
-            for j in range(self.max_train_len):
-                if(enc[i][j] != 0):
-                    comment.append(self.index_word[enc[i][j]])
-            self.corpus[label].append(comment)
-    '''       
-    def count_BLEU(self, y, target, label):
+
+
+    def count_BLEU(self, y, target):
         reference = [[]]
         candidate = []
         for i in range(self.max_train_len):
@@ -40,11 +29,10 @@ class countBLEU:
 
         score = sentence_bleu(reference, candidate)
         g_score = sentence_gleu(reference, candidate)
-        #classScore = corpus_bleu(self.corpus[label], candidate)
         
         self.bleuScore += score
         self.gleuScore += g_score
-        #self.classtenceScore += classScore
+
         self.comment += 1
         print(score)
         print(g_score)

@@ -7,7 +7,7 @@ from keras.models import Model
 from keras.layers import Embedding
 from keras.layers import GRU, Input
 from lstmEnc_DNN import lstmEncoder 
-from evaluate import countBLEU, countPerplexity
+from evaluate import countBLEU
 import keras.utils as ku
 import copy
 import math
@@ -139,7 +139,7 @@ def interpret(lstm, y, target):
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
     
     del y_train, y_val, y_test
     
@@ -184,7 +184,7 @@ if __name__ == "__main__":
         #print(one_hot_decode(y))
         #print(one_hot_decode(target))
         interpret(lstm, one_hot_decode(y), one_hot_decode(target))
-        bleu.count_BLEU(one_hot_decode(y), one_hot_decode(target), np.argmax(y_test[i]))
+        bleu.count_BLEU(one_hot_decode(y), one_hot_decode(target))
         
         if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
             correct += 1
