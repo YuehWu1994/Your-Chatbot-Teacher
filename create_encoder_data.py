@@ -44,10 +44,42 @@ for i,c in enumerate(sub):
 # print()
 
 
+#200 is about 28 words of 7 characters each
+#300 is about 43 words of 7 characters each
+length_limit = 30
+
 
 corpus = []
-for i,c in enumerate(comments):
-    corpus.append([c, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
+for i, comment in enumerate(comments):
+
+    #splits up the words
+    split_comment = comment.split(" ")
+
+    #splits up comments if longer than limit
+    # print(str(i)+": "+str(comment))
+
+    if len(split_comment) > length_limit:
+        start = length_limit
+        end = length_limit*2
+        #rewrites the original comment
+        # print("Breaking up: "+str(split_comment[:start]))
+        corpus.append([' '.join(split_comment[:start]), meta2id[metaLabels[i]], sub2id[subLabels[i]]])
+
+        #appends rest of the comment
+        while end < len(split_comment):
+            # print("Breaking up: "+str(split_comment[start:end]))
+            corpus.append([' '.join(split_comment[start:end]), meta2id[metaLabels[i]], sub2id[subLabels[i]]])
+            start = end
+            end += length_limit
+
+        #inserts the rest of the comment
+        if start<len(split_comment):
+            # print("Breaking up: "+str(split_comment[start:]))
+            corpus.append([' '.join(split_comment[start:]), meta2id[metaLabels[i]], sub2id[subLabels[i]]])
+        # input()
+    else:
+        corpus.append([comment, meta2id[metaLabels[i]], sub2id[subLabels[i]]])
+
     # print(corpus)
     # input()
 

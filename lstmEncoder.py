@@ -90,7 +90,11 @@ class lstmEncoder:
 
 
         ### DEBUG: set data length
-        X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 200000)
+        # X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 100000)
+        X_train = X_train[:200000]
+        y_train = y_train[:200000]
+        # X_test = X_test[:40000]
+        # y_test = y_test[:40000]
         self.trainLen = len(X_train)
 
         
@@ -168,7 +172,7 @@ class lstmEncoder:
         # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
         #                     validation_data=val_g.__getitem__(),validation_steps=50)
 
-        self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 10, shuffle=False)
+        self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 40, shuffle=False)
 
         #saves model
         try:
