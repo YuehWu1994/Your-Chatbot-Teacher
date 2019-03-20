@@ -29,14 +29,12 @@ class tfidfSentence:
             
         self.tfidf_cluster = self.tfidf.fit_transform(train_text)
         
-        tfidf_corpus = self.tfidf.transform(train_text)
-        cos_similarity = np.dot(tfidf_corpus, self.tfidf_cluster.T).A
-        for i in range(len(cos_similarity)):
-            cos_similarity[i][i] = 0
-            
-        c = np.argmax(cos_similarity, axis = 0) 
         
         target = []
-        for i in c:
-            target.append(x_train[i])
+        for i in range(0, len(train_text)):    
+            tfidf_corpus = self.tfidf.transform([train_text[i]])
+            cos_similarity = np.dot(tfidf_corpus, self.tfidf_cluster.T).A
+            cos_similarity[0][i] = 0
+            c = np.argmax(cos_similarity) 
+            target.append(x_train[c])
         return  np.array(target)
