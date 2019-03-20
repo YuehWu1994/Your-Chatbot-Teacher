@@ -140,7 +140,7 @@ def interpret(lstm, y, target):
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(30000)
     
     del y_train, y_val, y_test
     
