@@ -171,7 +171,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open( self.args.embedding_path , encoding="utf-8")
+        f = open(self.args.embedding_path, encoding="utf-8")
         # self.args.embedding_path  "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         
         for line in f:

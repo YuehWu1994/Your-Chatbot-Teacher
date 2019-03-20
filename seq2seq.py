@@ -8,6 +8,7 @@ from keras.layers import Embedding
 from keras.layers import GRU, Input
 from lstmEnc_DNN import lstmEncoder 
 from evaluate import countBLEU
+from tfidfSentence import tfidfSentence
 import keras.utils as ku
 import copy
 import math
@@ -147,8 +148,11 @@ if __name__ == "__main__":
     lstm.model.load_weights("./classifier.h5")
     
     layer_output = get_hidden_layer_output(lstm, X_train)
-    y = copy.copy(X_train)
     
+    
+    #y = copy.copy(X_train)
+    tfidf = tfidfSentence(lstm)
+    y = tfidf.transform(X_train)
     
     training_model, inference_model = define_model(lstm)
 
@@ -169,7 +173,7 @@ if __name__ == "__main__":
     total, correct = 100, 0
     test_layer_output = get_hidden_layer_output(lstm, X_test[:total])
     y_t = copy.copy(X_test[:total])
-    
+        
     bleu = countBLEU(lstm)
     
     for i in range(total):
