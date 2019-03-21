@@ -258,11 +258,11 @@ if __name__ == "__main__":
     lstm = lstmEncoder(batch_size)
     train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
     lstm.buildModel(embedding_matrix)
-    lstm.model.load_weights("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/classifier.h5")
+    #lstm.model.load_weights("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/classifier.h5")
     #cnf_matrix=confusion_matrix(np.argmax(y_test, axis = 1), np.argmax(lstm.model.predict(X_test), axis = 1))
     #np.set_printoptions(precision=2)
     #plt.figure(figsize=(20,10))
 
     #plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,title='Normalized confusion matrix class weight unbalanced')
-    #lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
+    lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
     #plot_model(lstm.model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
