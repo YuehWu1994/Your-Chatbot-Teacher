@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from nltk.translate.bleu_score import corpus_bleu
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate.gleu_score import sentence_gleu
 
@@ -36,6 +35,9 @@ class countBLEU:
         self.comment += 1
         print(score)
         print(g_score)
+        
+    def average(self):
+        return self.bleuScore/self.comment, self.gleuScore/self.comment
 
         
         

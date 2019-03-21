@@ -137,12 +137,12 @@ def interpret(lstm, y, target):
     print(ans)
     print(predSeq)
 
-if __name__ == "__main__":     
+if __name__ == "__main__": 
+    REPEAT_WORD = False    
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(30000)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(5000)
     
-    del y_train, y_val, y_test
     
     lstm.buildModel(embedding_matrix)
     lstm.model.load_weights("./classifier.h5")
@@ -150,15 +150,17 @@ if __name__ == "__main__":
     layer_output = get_hidden_layer_output(lstm, X_train)
     
     
-    #y = copy.copy(X_train)
-    tfidf = tfidfSentence(lstm)
-    y = tfidf.transform(X_train)
+    if REPEAT_WORD: 
+        y = copy.copy(X_train)
+    else:
+        tfidf = tfidfSentence(lstm, X_train, y_train)
+        y = tfidf.transformAll(X_train)
     
     training_model, inference_model = define_model(lstm)
 
     # train
     train_g = Generator(X_train, layer_output, y, lstm.batch_size, lstm.vocab_size)
-    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=3)
+    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=10)
 
     # save model
     try:
@@ -184,14 +186,17 @@ if __name__ == "__main__":
         y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
         y = np.reshape(y, (y.shape[1], y.shape[2]))       
         target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
-        
-        #print(one_hot_decode(y))
-        #print(one_hot_decode(target))
+
         interpret(lstm, one_hot_decode(y), one_hot_decode(target))
         bleu.count_BLEU(one_hot_decode(y), one_hot_decode(target))
         
         if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
             correct += 1
     print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
+    bleuAvg, gleuAvg = bleu.average();
+    print('BLEU score average is: ', bleuAvg)
+    print('GLEU score average is: ', gleuAvg)
+    
+    
     
     
