@@ -9,6 +9,7 @@ import numpy as np
 from lstmEnc_DNN import lstmEncoder 
 from evaluate import countBLEU
 from tfidfSentence import tfidfSentence
+import csv
 
 
 
@@ -16,11 +17,10 @@ if __name__ == "__main__":
     REPEAT_WORD = False    
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(5000)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(30000)
         
     
     tfidf = tfidfSentence(lstm, X_train, y_train)
-    y = tfidf.transformAll(X_train)
     
     
     # evaluate LSTM
@@ -28,11 +28,13 @@ if __name__ == "__main__":
         
     bleu = countBLEU(lstm)
     
-    for i in range(total):
-        tfidf.findMostSimilarOnAll(X_test[i])
-        tfidf.findMostSimilarOnOneClass(X_test[i], np.argmax(y_test[i]))
-        print('\n')
+    with open('IR.csv', mode='w') as f:
+        ir_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        ir_writer.writerow(['#id', 'question', 'most similar comment from all the subreddit', 'most similar comment from 1 the subreddit'])
     
+        for i in range(total):
+            c, q, a = tfidf.findMostSimilarOnAll(X_test[i])
+            c1, q1, a1 = tfidf.findMostSimilarOnOneClass(X_test[i], np.argmax(y_test[i]))
+            print('\n')
     
-    
-    
+            ir_writer.writerow([str(i), q, a, a1])

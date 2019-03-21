@@ -71,7 +71,7 @@ class tfidfSentence:
         print("=== Most similar sentence to the input from all subreddit. ===")
         print('Q: ', sentence)
         print('A: ', self.train_text[c])
-        return c
+        return c, sentence, self.train_text[c]
 
 
     def findMostSimilarOnOneClass(self, encs, label):
@@ -89,6 +89,6 @@ class tfidfSentence:
         print("=== Most similar sentence to the input from one subreddit. ===")
         print('Q: ', sentence)
         print('A: ', self.train_text_byClass[label][c])
-        return c
+        return c, sentence, self.train_text_byClass[label][c]
         
         

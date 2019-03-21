@@ -12,6 +12,7 @@ from tfidfSentence import tfidfSentence
 import keras.utils as ku
 import copy
 import math
+import csv
 
 
 class Generator(object):
@@ -136,6 +137,7 @@ def interpret(lstm, y, target):
         predSeq +=  "<UNK> " if (target[i] == 0) else (lstm.index_word[target[i]] + ' ')
     print(ans)
     print(predSeq)
+    return ans, predSeq
 
 if __name__ == "__main__": 
     REPEAT_WORD = False    
@@ -178,24 +180,30 @@ if __name__ == "__main__":
         
     bleu = countBLEU(lstm)
     
-    for i in range(total):
-        # extract indexes for this batch
-        X1 = X_test[i]
-        X2 = test_layer_output[i]
-        
-        y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
-        y = np.reshape(y, (y.shape[1], y.shape[2]))       
-        target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
+    with open('seq2seq.csv', mode='w') as f:
+        ir_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        ir_writer.writerow(['#id', 'Reference Comment', 'Predict Comment'])
 
-        interpret(lstm, one_hot_decode(y), one_hot_decode(target))
-        bleu.count_BLEU(one_hot_decode(y), one_hot_decode(target))
-        
-        if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
-            correct += 1
-    print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
-    bleuAvg, gleuAvg = bleu.average();
-    print('BLEU score average is: ', bleuAvg)
-    print('GLEU score average is: ', gleuAvg)
+        for i in range(total):
+            # extract indexes for this batch
+            X1 = X_test[i]
+            X2 = test_layer_output[i]
+            
+            y = ku.to_categorical([y_t[i]], num_classes=lstm.vocab_size)
+            y = np.reshape(y, (y.shape[1], y.shape[2]))       
+            target = predict_sequence(inference_model, X1, X2, lstm.max_train_len, lstm.vocab_size)
+    
+            ans, predSeq = interpret(lstm, one_hot_decode(y), one_hot_decode(target))
+            bleu.count_BLEU(one_hot_decode(y), one_hot_decode(target))
+            
+            ir_writer.writerow([str(i), ans, predSeq])
+            
+            if np.array_equal(one_hot_decode(y), one_hot_decode(target)):
+                correct += 1
+        print('Accuracy: %.2f%%' % (float(correct)/float(total)*100.0))
+        bleuAvg, gleuAvg = bleu.average();
+        print('BLEU score average is: ', bleuAvg)
+        print('GLEU score average is: ', gleuAvg)
     
     
     
