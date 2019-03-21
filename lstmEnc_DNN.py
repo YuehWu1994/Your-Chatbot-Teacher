@@ -214,7 +214,7 @@ class lstmEncoder:
     # def train(self,  train_g, val_g, X_test, y_test):
     def train(self, X_train, y_train, X_val, y_val, X_test, y_test):
 
-        self.history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 18, 
+        self.history = self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 10, 
                                  shuffle=False, validation_data=(X_val, y_val))
         fig = plt.figure()
         plt.plot(self.history.history['categorical_accuracy'], 'b')
