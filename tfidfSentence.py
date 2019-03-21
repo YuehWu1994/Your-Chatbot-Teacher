@@ -67,7 +67,10 @@ class tfidfSentence:
         
         cos_similarity = np.dot(tfidf_corpus, tfidf_cluster.T).A
         c = np.argmax(cos_similarity)
-        
+        while self.train_text[c] == sentence:
+            cos_similarity[0][c] = 0
+            c = np.argmax(cos_similarity)
+            
         print("=== Most similar sentence to the input from all subreddit. ===")
         print('Q: ', sentence)
         print('A: ', self.train_text[c])
@@ -85,6 +88,9 @@ class tfidfSentence:
         tfidf_corpus = tfidf.transform([sentence])
         cos_similarity = np.dot(tfidf_corpus, oneClass_tfidf_cluster.T).A
         c = np.argmax(cos_similarity)
+        while self.train_text_byClass[label][c] == sentence:
+            cos_similarity[0][c] = 0
+            c = np.argmax(cos_similarity)
         
         print("=== Most similar sentence to the input from one subreddit. ===")
         print('Q: ', sentence)

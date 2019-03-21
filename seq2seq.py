@@ -180,6 +180,7 @@ if __name__ == "__main__":
         
     bleu = countBLEU(lstm)
     
+    
     with open('seq2seq.csv', mode='w') as f:
         ir_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         ir_writer.writerow(['#id', 'Reference Comment', 'Predict Comment'])
@@ -204,6 +205,8 @@ if __name__ == "__main__":
         bleuAvg, gleuAvg = bleu.average();
         print('BLEU score average is: ', bleuAvg)
         print('GLEU score average is: ', gleuAvg)
+        
+        f.close();
     
     
     

@@ -17,7 +17,7 @@ if __name__ == "__main__":
     REPEAT_WORD = False    
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(30000)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
         
     
     tfidf = tfidfSentence(lstm, X_train, y_train)
@@ -38,3 +38,4 @@ if __name__ == "__main__":
             print('\n')
     
             ir_writer.writerow([str(i), q, a, a1])
+        f.close();
