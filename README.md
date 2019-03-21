@@ -1,5 +1,12 @@
 # CS272-NLP-Project
 
+## Warning 
+#### Please use encoded dataset and model in *rex* branch to avoid unmatched embedding index. These are located at [here](https://drive.google.com/open?id=1lB43R24xH6UdU_B4EZyOBQyw2rJVcUY3)
+- classifier.hs
+- enc_doc.pkl
+- label.pkl
+- word_index.pkl
+
 ### Teammates: ###   
 Yueh Wu  
 William Kuo  
