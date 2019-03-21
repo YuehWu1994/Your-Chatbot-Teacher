@@ -12,8 +12,8 @@ assert FAST_VERSION > -1
 docs = []
 docsLabels = []
 thread_path = "../threads_clean"
-root_dir =  '/Users/kaku/Data/reddit-dataset-master'
-
+root_dir =  '/Users/william/Data/reddit-dataset-master'
+# bad=0
 # for _, _, fileList in os.walk(root_dir):
 #     for f in fileList:
 #         if f.endswith(".csv"):
@@ -21,12 +21,14 @@ root_dir =  '/Users/kaku/Data/reddit-dataset-master'
 #             obj = ext(root_dir+'/'+f)
 #             obj.extract()
 #             txt = obj.text
-#             sub = obj.sub
 #             for i in range(len(txt)):
 #             	if any(d in txt[i] for d in ['http','https','jpg','gif','png']):
+#             		bad+=1
 #             		continue
 #             	docs.append(txt[i].split())
-#             	docsLabels.append([sub[i]])
+#             	# docsLabels.append([sub[i]])
+
+# print(f'filtered out {bad} comments')
 # assert len(docs) == len(docsLabels)
 # with open('_words','wb') as f:
 # 	pkl.dump(docs,f)
@@ -39,6 +41,7 @@ with open('./_words','rb') as f:
 with open('./_labels', 'rb') as f:
 	docsLabels = pkl.load(f)
 print ('loaded')
+docsLabels = [[i] for i in range(len(docs))]
 assert len(docs) == len(docsLabels)
 print(docs[0])
 print(docsLabels[0])
@@ -53,15 +56,7 @@ for epoch in tqdm(range(20)):
 	model.min_alpha = model.alpha
 
 model.save("d2v.model")
-#model complete
 print('model complete')
-
-with open(thread_path,'rb') as f:
-	threads = pkl.load(f)
-for t in threads:
-	docvec = model.infer_vector(t.split())
-	sims = model.docvecs.most_similar([docvec], topn=2)
-	import pdb;pdb.set_trace()
 
 
 
