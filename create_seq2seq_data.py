@@ -21,20 +21,21 @@ root_dir =  '/Users/kaku/Data/reddit-dataset-master'
 #             obj = ext(root_dir+'/'+f)
 #             obj.extract()
 #             txt = obj.text
-#             for t in txt:
-#             	docs.append(t.split())
 #             sub = obj.sub
-#             for s in sub:
-#             	docsLabels.append([s])
-
+#             for i in range(len(txt)):
+#             	if any(d in txt[i] for d in ['http','https','jpg','gif','png']):
+#             		continue
+#             	docs.append(txt[i].split())
+#             	docsLabels.append([sub[i]])
+# assert len(docs) == len(docsLabels)
 # with open('_words','wb') as f:
 # 	pkl.dump(docs,f)
 # with open('_labels','wb') as f:
 # 	pkl.dump(docsLabels,f)
-
+# del docs 
+# del docsLabels
 with open('./_words','rb') as f:
 	docs = pkl.load(f)
-
 with open('./_labels', 'rb') as f:
 	docsLabels = pkl.load(f)
 print ('loaded')
@@ -43,10 +44,10 @@ print(docs[0])
 print(docsLabels[0])
 sentences = [TaggedDocument(words=docs[i], tags=docsLabels[i]) for i in range(len(docs))]
 del docs, docsLabels
-model = Doc2Vec(dm=1 ,vector_size=200, min_count=2, window=10, negative=5 ,alpha=0.025, hs=0, workers=4)
+model = Doc2Vec(dm=1 ,vector_size=150, min_count=5, sample=1e-4, window=10, negative=5 ,alpha=0.025, hs=0, workers=4)
 
 model.build_vocab([x for x in tqdm(sentences)])
-for epoch in tqdm(range(35)):
+for epoch in tqdm(range(20)):
 	model.train(sentences, total_examples=model.corpus_count, epochs=1)
 	model.alpha -= 0.002
 	model.min_alpha = model.alpha
