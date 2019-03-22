@@ -54,7 +54,7 @@ class lstmEncoder:
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         
         print("LOAD_DATA...")
-        corpus = pickle.load( open( self.args.data_path, "rb" ) )
+        corpus = pickle.load( open( "./classifier_data.txt", "rb" ) )
         docs = []
         labels = []  
         
@@ -65,7 +65,7 @@ class lstmEncoder:
         del corpus 
         return docs, labels
     
-    def create_Emb(self):
+    def create_Emb(self, num_data_points):
         ### prepare tokenizer
         t = Tokenizer()
         t.fit_on_texts(self.docs)
@@ -91,8 +91,10 @@ class lstmEncoder:
 
         ### DEBUG: set data length
         # X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 100000)
-        X_train = X_train[:200000]
-        y_train = y_train[:200000]
+        X_train = X_train[:num_data_points]
+        y_train = y_train[:num_data_points]
+        X_test = X_test[:num_data_points]
+        y_test = y_test[:num_data_points]
         # X_test = X_test[:40000]
         # y_test = y_test[:40000]
         self.trainLen = len(X_train)
@@ -134,6 +136,91 @@ class lstmEncoder:
         	embedding_vector = embeddings_index.get(word)
         	if embedding_vector is not None:
         		embedding_matrix[i] = embedding_vector
+                
+        # train_g = gen(X_train, y_train, self.batch_size, self.num_classes)
+        # val_g = gen(X_val, y_val, self.batch_size, self.num_classes)
+
+        # print("X_train: "+str(X_train[:3]))
+        # print("y_train: "+str(y_train[:3]))
+        # print("X_test: "+str(X_test[:3]))
+        # print("y_test: "+str(y_test[:3]))
+        # print("Embedding matrix: "+str(embedding_matrix[:3]))
+        
+        # return train_g, val_g, X_test, y_test, embedding_matrix
+        return X_train, y_train, X_test, y_test, embedding_matrix
+
+
+    def create_Emb_encoder_decoder(self, num_data_points):
+        ### prepare tokenizer
+        t = Tokenizer()
+        t.fit_on_texts(self.docs)
+        self.vocab_size = len(t.word_index) + 1
+
+        print("Vocab size: "+str(self.vocab_size))
+        
+        ### integer encode the documents
+        encoded_docs = t.texts_to_sequences(self.docs)
+
+        ### split in random
+        print("Shuffling...")
+        X_train, X_test, y_train, y_test = train_test_split(encoded_docs, self.labels, test_size=0.1, random_state=42)
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+        
+        print("X_train: "+str(len(X_train)))
+        print("y_train: "+str(len(y_train)))
+        print("X_val: "+str(len(X_val)))
+        print("y_val: "+str(len(y_val)))
+        print("X_test: "+str(len(X_test)))
+        print("y_test: "+str(len(y_test)))
+
+
+        ### DEBUG: set data length
+        # X_train, y_train, X_val, y_val, X_test, y_test = self.set_limitData( X_train, y_train, X_val, y_val, X_test, y_test, 100000)
+        X_train = X_train[:num_data_points]
+        y_train = y_train[:num_data_points]
+        X_test = X_test[:num_data_points]
+        y_test = y_test[:num_data_points]
+        # X_test = X_test[:40000]
+        # y_test = y_test[:40000]
+        self.trainLen = len(X_train)
+
+        
+
+        ### pad train data
+        # self.max_train_len = max(len(x) for x in X_train)
+        self.max_train_len = 20
+        print("max_train_len: "+str(self.max_train_len))
+        X_train = pad_sequences(X_train, maxlen=self.max_train_len, padding='pre')
+        y_train = ku.to_categorical(y_train, num_classes=self.num_classes)
+        
+        
+        ### pad test data
+        # self.max_test_len = max(len(x) for x in X_test)
+        # self.max_test_len = 1000
+        self.max_test_len = self.max_train_len
+        print("max_test_len: "+str(self.max_test_len))
+        X_test = pad_sequences(X_test, maxlen=self.max_test_len, padding='pre')
+        y_test = ku.to_categorical(y_test, num_classes=self.num_classes)
+
+
+        ### load the whole embedding into memory
+        embeddings_index = dict()
+        f = open(self.args.embedding_path, encoding="utf-8")
+        # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"
+        for line in f:
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+        f.close()
+        print('Loaded %s word vectors.' % len(embeddings_index))
+        
+        ### create a weight matrix for words in training docs
+        embedding_matrix = np.zeros((self.vocab_size, 100))
+        for word, i in t.word_index.items():
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                embedding_matrix[i] = embedding_vector
                 
         # train_g = gen(X_train, y_train, self.batch_size, self.num_classes)
         # val_g = gen(X_val, y_val, self.batch_size, self.num_classes)
@@ -205,7 +292,7 @@ class lstmEncoder:
 if __name__ == "__main__":     
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb()
+    train_g, val_g, X_test, y_test, embedding_matrix = lstm.create_Emb(100000)
     lstm.buildModel(embedding_matrix)
     lstm.train(train_g, val_g, X_test, y_test)
     

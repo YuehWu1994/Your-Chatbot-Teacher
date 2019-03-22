@@ -36,15 +36,16 @@ class CharCNN:
         p = configargparse.ArgParser()
         p.add('-c', '--config',required=True, is_config_file=True, help='config file path')
         p.add('--data_path', required=True)
+        p.add('--embedding_path', required=False)
         args = p.parse_args()
         return args
     
     def load_data(self,size_limit=None):
-        with open( self.args.data_path, "rb" ) as f:
+        with open( self.data_path, "rb" ) as f:
             corpus = pkl.load(f)
             for c in corpus:
                 self.docs.append(c[0])
-                self.labels.append(c[2])
+                self.labels.append(c[1])
             # self.labels = np.array(labels)
         del corpus
         self.labels = self.labels[:size_limit]
@@ -142,7 +143,7 @@ class CharCNN:
             max_len_of_sentence = self.max_len_of_sentence
         if max_num_of_setnence is None:
             max_num_of_setnence = self.max_num_of_setnence
-
+        '''
         for i, doc in enumerate(x_raw):
             for j, sentence in enumerate(doc):
                 if j < max_num_of_setnence:
@@ -151,7 +152,18 @@ class CharCNN:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices['UNK']
                         else:
                             x[i, j, (max_len_of_sentence-1-t)] = self.char_indices[char]
-
+        '''                
+        for i, doc in enumerate(x_raw):
+            for j in range(max_num_of_setnence):
+                for k in range(max_len_of_sentence):
+                    if j*max_len_of_sentence+k >= len(doc):
+                        break
+                    char = doc[j*max_len_of_sentence+k]
+                    if char not in self.char_indices:
+                        x[i, j, k] = self.char_indices['UNK']
+                    else:
+                        x[i, j, k] = self.char_indices[char] 
+        
         return x, y
 
     def _build_character_block(self, block, dropout=0.3, filters=[64, 100], kernel_size=[3, 3], 
@@ -216,7 +228,7 @@ class CharCNN:
             print('-----> Stage: preprocess')
             
         self.build_char_dictionary(char_dict, unknown_label)
-        # self.convert_labels()
+        self.convert_labels()
     
     def process(self, x, y,
                 max_len_of_sentence=None, max_num_of_setnence=None, label2indexes=None, sample_size=None):
@@ -293,9 +305,9 @@ class CharCNN:
             print('-----> Stage: predict')
             
         if return_prob:
-            return self.get_model().predict(x_test)
+            return self.get_model().predict(x)
         
-        return self.get_model().predict(x_test).argmax(axis=-1)
+        return self.get_model().predict(x).argmax(axis=-1)
     
     def get_model(self):
         return self.model['doc_encoder']
@@ -306,7 +318,7 @@ if __name__ == '__main__':
     Maximum number of sentence is 5
     """
 
-    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=5)
+    char_cnn = CharCNN(max_len_of_sentence=256, max_num_of_setnence=1)
 
     """
     First of all, we need to prepare meta information including character dictionary 
@@ -316,8 +328,8 @@ if __name__ == '__main__':
     """
     We have to transform raw input training data and testing to numpy format for keras input
     """
-    char_cnn.load_data(30000)
-    X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.1, random_state=42)
+    char_cnn.load_data(1000000)
+    X_train, X_test, y_train, y_test = train_test_split(char_cnn.docs, char_cnn.labels, test_size=0.4, random_state=42)
     # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     char_cnn.preprocess()
     x_train, y_train = char_cnn.process(X_train, y_train)

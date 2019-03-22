@@ -2,5 +2,9 @@ tmp/
 __pycache__/
 *.pyc
 
+#does not include trained models
+*.pkl
+*.h5
+
 glove.6B
 glove.42B
