@@ -31,7 +31,20 @@ if __name__ == "__main__":
     print("loss %f " % (loss*100))
     print('Accuracy: %f' % (accuracy*100))
     pred = classifier.predict(X_test)
-  
+    
+    
+    '''
+    # input a comment here
+    c = "hey how are you"
+    enc = np.zeros(lstm.max_train_len)
+    
+    c_split = c.split()
+    for i in range(0, min(20, len(c_split))):
+        enc[lstm.max_train_len-1-i] = lstm.word_index[c_split[len(c_split)-1-i]]
+    classifier.predict(np.reshape(enc, (1, lstm.max_train_len)))
+    '''    
+    
+        
     with open('IR.csv', mode='w') as f:
         ir_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         ir_writer.writerow(['#id', 'question', 'most similar comment from all the subreddit', 'most similar comment from 1 the subreddit'])

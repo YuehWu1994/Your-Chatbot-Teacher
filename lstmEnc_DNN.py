@@ -25,6 +25,7 @@ from DataGenerator import Generator as gen
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import configargparse
+from keras.models import load_model
 
 
 def plot_confusion_matrix(cm, classes,
@@ -43,6 +44,7 @@ def plot_confusion_matrix(cm, classes,
 
     print(cm)
 
+    plt.figure(figsize=(30,30))
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -60,11 +62,13 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
+    
+    plt.savefig('confusion_matrix.png')
 
 
 class lstmEncoder:
     def __init__(self, batch_size):
-        self.args = self._parse_args()
+        #self.args = self._parse_args()
         self.batch_size = batch_size
         
         cwdFiles = os.listdir(os.getcwd())
@@ -105,7 +109,7 @@ class lstmEncoder:
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"  self.args.data_path
         print("LOAD_DATA...")
 
-        corpus = pkl.load( open( self.args.data_path, "rb" ) )
+        corpus = pkl.load( open( "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data", "rb" ) )
         docs = []
         labels = []  
         
@@ -171,7 +175,7 @@ class lstmEncoder:
 
         ### load the whole embedding into memory
         embeddings_index = dict()
-        f = open( self.args.embedding_path , encoding="utf-8")
+        f = open( "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt" , encoding="utf-8")
         # self.args.embedding_path  "/Users/apple/Desktop/q2_course/cs272/finalProject/glove.6B/glove.6B.100d.txt"
         
         for line in f:
@@ -258,11 +262,11 @@ if __name__ == "__main__":
     lstm = lstmEncoder(batch_size)
     train_g, val_g, X_val, y_val,X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
     lstm.buildModel(embedding_matrix)
-    #lstm.model.load_weights("/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/classifier.h5")
-    #cnf_matrix=confusion_matrix(np.argmax(y_test, axis = 1), np.argmax(lstm.model.predict(X_test), axis = 1))
-    #np.set_printoptions(precision=2)
-    #plt.figure(figsize=(20,10))
+    lstm.model = load_model('./classifier.h5')
+    cnf_matrix=confusion_matrix(np.argmax(y_test, axis = 1), np.argmax(lstm.model.predict(X_test), axis = 1))
+    np.set_printoptions(precision=2)
+    
 
-    #plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,title='Normalized confusion matrix class weight unbalanced')
-    lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
+    plot_confusion_matrix(cnf_matrix, classes=c, normalize=True,title='Normalized confusion matrix class weight unbalanced')
+    #lstm.train(train_g, val_g, X_val, y_val, X_test, y_test)
     #plot_model(lstm.model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
