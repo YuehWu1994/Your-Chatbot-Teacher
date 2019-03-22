@@ -109,7 +109,7 @@ class lstmEncoder:
         # "/Users/apple/Desktop/q2_course/cs272/finalProject/CS272-NLP-Project/data"  self.args.data_path
         print("LOAD_DATA...")
 
-        corpus = pkl.load( open(self.args.data_path, "rb" ) )
+        corpus = pkl.load( open( self.args.data_path, "rb" ) )
         docs = []
         labels = []  
         
@@ -255,7 +255,17 @@ class lstmEncoder:
         print("loss %f " % (loss*100))
         print('Accuracy: %f' % (accuracy*100))
 
-
+    def willsSIMIL(self):
+        dialogs = pkl.load( open('./dialog_data', "rb" ) )
+        x, y = np.zeros((len(dialogs), self.max_train_len)), np.zeros((len(dialogs), self.max_train_len))
+        for i, dialog in  enumerate(dialogs):
+            q = dialog[0].split()
+            a = dialog[1]
+            for j in range(0, min(20, len(q))):
+                x[i][self.max_train_len-1-j] = self.word_index[q[len(q)-1-j]]
+            for j in range(0, min(20, len(a))):
+                y[i][self.max_train_len-1-j] = self.word_index[a[len(a)-1-j]]    
+        return x, y
 
 if __name__ == "__main__":     
     batch_size = 50

@@ -62,15 +62,17 @@ if __name__ == "__main__":
         header.append("subclass"+str(i))
     header.append('most similar comment from 1 the subreddit')
     
-    with open('IR.csv', mode='w') as f:
+    with open('IR_thread.csv', mode='w') as f:
         ir_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         ir_writer.writerow(header)
     
         for i in range(total):
             c, q, output = tfidf.find10MostSimilarOnAll(X_test[i])
+            #c, q, output = tfidf.find10MostSimilarOnAll(thread[i][0])
             if(len(output) != 20):
                 continue
             content = [str(i), q, str(np.argmax(y_test[i]))]
+            #content = [str(i), q, thread[i][1]]
             for o in output:
                 content.append(o)   
             c1, q1, a1 = tfidf.findMostSimilarOnOneClass(X_test[i], np.argmax(pred[i]))

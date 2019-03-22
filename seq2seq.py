@@ -126,7 +126,7 @@ def predict_sequence(inference_model, X1, X2, n_steps, cardinality):
 
 def one_hot_decode(encoded_seq):
 	return [np.argmax(vector) for vector in encoded_seq]
-
+    
 
 
 def interpret(lstm, y, target):
@@ -140,7 +140,10 @@ def interpret(lstm, y, target):
     return ans, predSeq
 
 if __name__ == "__main__": 
-    REPEAT_WORD = True    
+    state = 0
+    REPEAT_WORD = 0
+    TFIDF_SIMIL = 1
+    WIL_SIMIL = 2    
     batch_size = 50
     lstm = lstmEncoder(batch_size)
     X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
@@ -152,12 +155,13 @@ if __name__ == "__main__":
     layer_output = get_hidden_layer_output(lstm, X_train)
     
     
-    if REPEAT_WORD: 
+    if state == REPEAT_WORD: 
         y = copy.copy(X_train)
-    else:
+    elif state == TFIDF_SIMIL:
         tfidf = tfidfSentence(lstm, X_train, y_train)
         y = tfidf.transformAll(X_train)
-    
+    else:
+        X_train, y = lstm.willsSIMIL()
     training_model, inference_model = define_model(lstm)
 
     # train
