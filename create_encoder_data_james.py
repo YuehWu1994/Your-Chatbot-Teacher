@@ -81,8 +81,6 @@ for i, comment in enumerate(comments):
     # input()
 
 import pickle as pkl
-'''
+
 with open('./data','wb') as f:
     pkl.dump(corpus,f)
-    
-'''

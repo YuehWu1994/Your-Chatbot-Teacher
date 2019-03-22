@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 *.pkl
 *.zip
+*.pages
+*.csv
+

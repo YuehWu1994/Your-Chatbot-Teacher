@@ -140,10 +140,10 @@ def interpret(lstm, y, target):
     return ans, predSeq
 
 if __name__ == "__main__": 
-    REPEAT_WORD = False    
+    REPEAT_WORD = True    
     batch_size = 50
     lstm = lstmEncoder(batch_size)
-    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(5000)
+    X_train, y_train, X_val, y_val, X_test, y_test, embedding_matrix = lstm.create_Emb(300000)
     
     
     lstm.buildModel(embedding_matrix)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
     # train
     train_g = Generator(X_train, layer_output, y, lstm.batch_size, lstm.vocab_size)
-    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=10)
+    training_model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(len(X_train) / lstm.batch_size), epochs=3)
 
     # save model
     try:

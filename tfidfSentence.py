@@ -18,6 +18,7 @@ class tfidfSentence:
         self.word_index = lstm.word_index
         self.num_classes = lstm.num_classes
         self.train_text = []
+        self.train_label = y_train
         self.train_text_byClass = [[] for _ in range(self.num_classes)]
         self.genSentence(x_train, y_train)
         
@@ -55,26 +56,43 @@ class tfidfSentence:
     
     
     # find most similar sentence on labeled sub-class
-    def findMostSimilarOnAll(self, encs):
+    def find10MostSimilarOnAll(self, encs):    
         sentence = "";
         for enc in encs:
             if(enc != 0):
                 sentence = sentence + self.index_word[enc] + " "        
-        
-        tfidf = TfidfVectorizer()
-        tfidf_cluster = tfidf.fit_transform(self.train_text)
-        tfidf_corpus = tfidf.transform([sentence])
-        
-        cos_similarity = np.dot(tfidf_corpus, tfidf_cluster.T).A
-        c = np.argmax(cos_similarity)
-        while self.train_text[c] == sentence:
-            cos_similarity[0][c] = 0
-            c = np.argmax(cos_similarity)
-            
+
         print("=== Most similar sentence to the input from all subreddit. ===")
         print('Q: ', sentence)
-        print('A: ', self.train_text[c])
-        return c, sentence, self.train_text[c]
+        
+        
+        _tfidf = TfidfVectorizer()
+        tfidf_cluster = _tfidf.fit_transform(self.train_text)
+        tfidf_corpus = _tfidf.transform([sentence])
+        
+        cos_similarity = np.dot(tfidf_corpus, tfidf_cluster.T).A
+        
+        output = []
+        i = 0
+        while i < 10:  
+            c = np.argmax(cos_similarity)
+            if(c == 0):
+                break
+    
+            while self.train_text[c] == sentence:
+                if(c == 0):
+                    break
+                cos_similarity[0][c] = 0
+                c = np.argmax(cos_similarity)
+            sentence = self.train_text[c]
+            cos_similarity[0][c] = 0
+            print('A'+ str(i+1) +': ', self.train_text[c])   
+            print('Class: ', np.argmax(self.train_label[c]))
+            output.append(self.train_text[c])
+            output.append(np.argmax(self.train_label[c]))
+            i += 1
+        
+        return c, sentence, output
 
 
     def findMostSimilarOnOneClass(self, encs, label):
