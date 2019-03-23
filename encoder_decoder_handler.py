@@ -63,6 +63,7 @@ class encoder_decoder_handler:
         target_data = []  
         
         for index, c in enumerate(corpus):
+            #limits to 20,000 comments, since it's RAM expensive to load all 400,000 each time
             if index<20000:
                 input_data.append(c[0])
                 target_data.append(c[1])
@@ -201,7 +202,6 @@ class encoder_decoder_handler:
 
     #returns the word whose unique ID is the param
     def decode_int(self, value):
-        # print("Decoding "+str(value))
         #searches for word in dictionary
         word = " "
         for key in self.tokenizer.word_index:
@@ -241,9 +241,6 @@ class encoder_decoder_handler:
         
     # def train(self,  train_g, val_g, X_test, y_test):
     def train(self, X_train, y_train, X_test, y_test):
-        # self.model.fit_generator(train_g.__getitem__(), steps_per_epoch= math.ceil(self.trainLen / self.batch_size), epochs=50, 
-        #                     validation_data=val_g.__getitem__(),validation_steps=50)
-
         self.model.fit(X_train, y_train, batch_size = self.batch_size, epochs = 40, shuffle=False)
 
         #saves model
@@ -258,18 +255,6 @@ class encoder_decoder_handler:
         loss, accuracy = self.model.evaluate(X_test, y_test)
         print("loss %f " % (loss*100))
         print('Accuracy: %f' % (accuracy*100))
-
-
-
-        #makes sure the accuracy calculated previous is the actual accuracy (it is)
-        # y_test_pred = self.model.predict(X_test)
-        # total_correct = 0
-        # for x in range(0, len(y_test_pred)):
-        #     index = np.where(y_test_pred[x]==np.amax(y_test_pred[x]))
-        #     actual_index = np.where(y_test[x]==1)
-        #     if index == actual_index:
-        #         total_correct+=1
-        # print("Accuracy: "+str(total_correct/len(y_test)))
 
 
 
