@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 import math
 import pickle
 from DataGenerator import Generator as gen
+import random
 
 import configargparse
 
@@ -61,17 +62,40 @@ class encoder_decoder_handler:
         corpus = pickle.load( open( "./encoder_decoder_data", "rb" ) )
         input_data = []
         target_data = []  
+
+        limit = 30000
         
         for index, c in enumerate(corpus):
-            #limits to 20,000 comments, since it's RAM expensive to load all 400,000 each time
-            if index<20000:
+            if index < limit:
                 input_data.append(c[0])
                 target_data.append(c[1])
 
+
+
+        # #randomizes input data
+        # random_input_data = []
+        # random_target_data = []
+        # #limits to 30,000 comments, since it's RAM expensive to load and keep 400,000 in the embedding matrix
+        # for x in range(limit):
+        #     index = random.randint(0, len(input_data))
+
+        #     try:
+        #         random_input_data.append(input_data[index])
+        #         random_target_data.append(target_data[index])
+        #     except Exception as error:
+        #         print(error)
+        #         print("Index: "+str(index))
+        #         break
+
+        #     del input_data[index]
+        #     del target_data[index]
+
+        # return random_input_data, random_target_data
+
+
+
         print("Input Len:"+str(len(input_data)))
         print("Target Len: "+str(len(target_data)))
-
-        # target_data = np.array(target_data)
 
         return input_data, target_data
     
@@ -210,6 +234,10 @@ class encoder_decoder_handler:
                 break
 
         return word
+
+    #encodes a text sequence from words to hot one vectors
+    def encode_sequence(self, sequence):
+        return self.tokenizer.texts_to_sequences(sequence)
 
 
     def get_token_index(self, token):
