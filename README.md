@@ -1,5 +1,5 @@
 # Your Chatbot Teacher
-This is the final project of Statistical Natural Language Processing in Winter 2019. We developed a chatbot that could perform dialogue based on seq2seq text generation and information retrieval
+This is the final project of Statistical Natural Language Processing in Winter 2019. We developed a chatbot that could perform dialogue based on seq2seq text generation and information retrieval. Please check our [Final Report](https://github.com/YuehWu1994/Your-Chatbot-Teacher/blob/master/Final%20Report.pdf) for design logic, performance and evaluation.
 
 ## Instruction
 
